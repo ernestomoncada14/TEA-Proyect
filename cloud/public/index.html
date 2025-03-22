@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Números en tiempo real</title>
+</head>
+<body>
+  <h1>Últimos números</h1>
+
+  <input id="inputNumero" placeholder="Ingresa un número" />
+  <button onclick="enviarNumero()">Enviar</button>
+
+  <table border="1" id="tablaNumeros" style="margin-top: 20px;">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Número</th>
+      </tr>
+    </thead>
+    <tbody id="tablaBody"></tbody>
+  </table>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const tablaBody = document.getElementById("tablaBody");
+
+    // Recibe la lista inicial de números
+    socket.on("lista-numeros", (numeros) => {
+      tablaBody.innerHTML = "";
+      numeros.forEach(n => {
+        const fila = crearFila(n);
+        tablaBody.appendChild(fila);
+      });
+    });
+
+    // Recibe un nuevo número en tiempo real
+    socket.on("nuevo-numero", (n) => {
+      const fila = crearFila(n);
+      tablaBody.insertBefore(fila, tablaBody.firstChild);
+      if (tablaBody.rows.length > 10) tablaBody.deleteRow(-1);
+    });
+
+    // Enviar número al servidor
+    function enviarNumero() {
+      const input = document.getElementById("inputNumero");
+      fetch("/api/numeros", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ numero: input.value })
+      });
+      input.value = "";
+    }
+
+    // Crear una fila para la tabla
+    function crearFila(n) {
+      const fila = document.createElement("tr");
+      const tdId = document.createElement("td");
+      const tdNumero = document.createElement("td");
+      tdId.textContent = n.id;
+      tdNumero.textContent = n.numero;
+      fila.appendChild(tdId);
+      fila.appendChild(tdNumero);
+      return fila;
+    }
+  </script>
+</body>
+</html>
