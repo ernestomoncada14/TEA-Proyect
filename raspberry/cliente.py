@@ -1,4 +1,4 @@
-import socketio
+import socketio # type: ignore
 import requests
 import threading
 
