@@ -172,10 +172,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
-
-git rm -r --cached cloud/node_modules/
-echo "cloud/node_modules/" >> .gitignore
-git add .gitignore
-git commit -m "Ignorar cloud/node_modules correctamente"
 cloud/node_modules/
