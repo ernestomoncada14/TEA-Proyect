@@ -14,7 +14,7 @@
   const db = require("./models");
 
   await db.sequelize.authenticate();
-  console.log("✅ Conectado a MySQL con Sequelize");
+  console.log("🟢 Conectado a MySQL con Sequelize");
 
   const app = express();
   const server = http.createServer(app);
@@ -34,7 +34,7 @@
 
   // Iniciar servidor
   server.listen(3000, () => {
-    console.log("✅ Servidor corriendo en http://localhost:3000");
+    console.log("🟢 Servidor corriendo en http://localhost:3000");
   });
 
 })();

@@ -11,7 +11,7 @@ function verificarToken(req, res, next) {
     req.usuario = decoded;
     next();
   } catch (err) {
-    console.error("❌ Error en el token:", err.message); // 👈 LOG
+    console.error("Error en el token:", err.message);
     return res.status(403).send("Token inválido o expirado");
   }
 }

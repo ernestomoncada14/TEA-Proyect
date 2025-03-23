@@ -7,7 +7,7 @@ module.exports = (db, io) => {
   const router = express.Router();
 
   // Ruta de prueba para ver usuarios
-  router.get("/prueba", async (req, res) => {
+  router.get("/prueba", verificarToken, async (req, res) => {
     const usuarios = await db.Usuario.findAll();
     res.json(usuarios);
   });

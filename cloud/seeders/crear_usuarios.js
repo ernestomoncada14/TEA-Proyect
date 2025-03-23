@@ -4,7 +4,7 @@ const { sequelize, Usuario } = require("../models");
   try {
     // Conectar a la base de datos
     await sequelize.authenticate();
-    console.log("✅ Conectado a la base de datos");
+    console.log("Conectado a la base de datos");
 
     // Crear 3 usuarios
     const usuarios = [
@@ -33,13 +33,13 @@ const { sequelize, Usuario } = require("../models");
 
     for (const u of usuarios) {
       await Usuario.create(u);
-      console.log(`👤 Usuario creado: ${u.nombre_completo}`);
+      console.log(`Usuario creado: ${u.nombre_completo}`);
     }
 
-    console.log("🎉 Todos los usuarios fueron creados correctamente.");
+    console.log("Todos los usuarios fueron creados correctamente.");
     await sequelize.close();
   } catch (err) {
-    console.error("❌ Error al crear usuarios:", err);
+    console.error("Error al crear usuarios:", err);
     await sequelize.close();
   }
 })();
