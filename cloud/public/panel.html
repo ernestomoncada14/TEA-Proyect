@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Principal</title>
+</head>
+<body>
+  <h1 id="titulo">Bienvenido al Panel Principal</h1>
+
+  <p><strong>Rol:</strong> <span id="rol"></span></p>
+  <p><strong>Permisos:</strong> <span id="permisos"></span></p>
+
+  <button id="logoutBtn">Cerrar sesión</button>
+
+  <script>
+    // Obtener la info del usuario autenticado desde el backend
+    fetch("/api/userinfo", {
+      credentials: "include"
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("No autorizado");
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById("rol").textContent = data.rol;
+        document.getElementById("permisos").textContent = data.permisos.join(", ");
+      })
+      .catch(() => {
+        // Si no hay sesión válida, redirigir al login
+        window.location.href = "/";
+      });
+  
+    // Botón de logout
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await fetch("/logout", { method: "GET", credentials: "include" });
+      window.location.href = "/";
+    });
+  </script>
+  
+</body>
+</html>

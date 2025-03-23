@@ -1,19 +1,10 @@
-module.exports = (io, Numero) => {
+module.exports = (io, db) => {
     io.on("connection", async (socket) => {
       console.log("🟢 Cliente conectado");
   
       try {
-        const numeros = await Numero.findAll({
-          order: [["id", "DESC"]],
-          limit: 10
-        });
-        socket.emit("lista-numeros", numeros);
-  
-        const ultimos = await Numero.findAll({
-          order: [["id", "DESC"]],
-          limit: 3
-        });
-        socket.emit("ultimos", ultimos);
+
+        socket.emit("init", "Hola desde el servidor");
   
       } catch (err) {
         console.error("Error al consultar:", err);

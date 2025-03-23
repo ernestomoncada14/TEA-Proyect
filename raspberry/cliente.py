@@ -11,16 +11,18 @@ sio = socketio.Client()
 @sio.event
 def connect():
     print("✅ Conectado al servidor WebSocket")
+    # Solicitar la lista de números a la API
+    response = requests.get(f"{BASE_URL}/api/get-ultimos")
+    if response.status_code == 200:
+        print("📥 Lista de ultimos 3 números:")
+        for numero in response.json():
+            print(f"numero con ID={numero['id']} | Número={numero['numero']}")
+    else:
+        print(f"⚠️ Error al obtener la lista de números: {response.status_code}")
 
 @sio.on("nuevo-numero")
 def nuevo_numero(data):
     print(f"📥 Nuevo número recibido: ID={data['id']} | Número={data['numero']}")
-    
-@sio.on("ultimos")
-def ultimos(data):
-    print("📥 los ultimos numeros 3 que se recibieron son:")
-    for numero in data:
-        print(f"📥 numero con ID={numero['id']} | Número={numero['numero']}")
 
 @sio.event
 def disconnect():
@@ -29,7 +31,7 @@ def disconnect():
 # Función para enviar nuevos números a la API
 def enviar_numeros():
     while True:
-        numero = input("📝 Ingresa un nuevo número (o 'salir' para terminar): ")
+        numero = input("Ingresa un nuevo número (o 'salir' para terminar): ")
         if numero.lower() == "salir":
             break
         try:
