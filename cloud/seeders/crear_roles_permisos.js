@@ -8,8 +8,8 @@ const { sequelize, Rol, Permiso, RolPermiso } = require("../models");
     // Definir roles
     const roles = [
       { id_rol: 1, nombre_rol: "admin" },
-      { id_rol: 2, nombre_rol: "operador" },
-      { id_rol: 3, nombre_rol: "tecnico" }
+      { id_rol: 2, nombre_rol: "fontanero" },
+      { id_rol: 3, nombre_rol: "habitante" }
     ];
 
     // Definir permisos
@@ -17,7 +17,8 @@ const { sequelize, Rol, Permiso, RolPermiso } = require("../models");
       { id_permiso: 1, permiso: "ver" },
       { id_permiso: 2, permiso: "crear" },
       { id_permiso: 3, permiso: "editar" },
-      { id_permiso: 4, permiso: "eliminar" }
+      { id_permiso: 4, permiso: "eliminar" },
+      { id_permiso: 5, permiso: "api" }
     ];
 
     // Crear roles si no existen
@@ -35,10 +36,10 @@ const { sequelize, Rol, Permiso, RolPermiso } = require("../models");
     // Asociaciones de ejemplo entre roles y permisos
     const asociaciones = [
       // Admin tiene todos los permisos
-      { id_rol: 1, permisos: [1, 2, 3, 4] },
-      // Operador solo puede ver y crear
-      { id_rol: 2, permisos: [1, 2] },
-      // Técnico solo puede ver
+      { id_rol: 1, permisos: [1, 2, 3, 4, 5] },
+      // fontanero solo puede ver, crear, editar y eliminar
+      { id_rol: 2, permisos: [1, 2, 3, 4] },
+      // habitante solo puede ver
       { id_rol: 3, permisos: [1] }
     ];
 

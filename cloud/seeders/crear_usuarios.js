@@ -11,20 +11,27 @@ const { sequelize, Usuario } = require("../models");
       {
         id_usuario: 1,
         id_rol: 1,
+        nombre_completo: "api user",
+        correo: "apiUser1418API@sistema-agua",
+        contrasenia: "DjtdDtsDvty;dErbEh,dd{45$QdiEDED"
+      },
+      {
+        id_usuario: 2,
+        id_rol: 2,
         nombre_completo: "Ernesto(neto) Moncada",
         correo: "neto@example.com",
         contrasenia: "123"
       },
       {
-        id_usuario: 2,
-        id_rol: 1,
+        id_usuario: 3,
+        id_rol: 3,
         nombre_completo: "Daniel Henrriquez",
         correo: "daniel@example.com",
         contrasenia: "123"
       },
       {
-        id_usuario: 3,
-        id_rol: 1,
+        id_usuario: 4,
+        id_rol: 3,
         nombre_completo: "Ingrid Bauedano",
         correo: "ingrid@example.com",
         contrasenia: "123"

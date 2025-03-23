@@ -4,7 +4,6 @@
   const { Server } = require("socket.io");
 
   const sequelize = require("./config/database");
-  const NumeroModel = require("./models/numero");
   const initSocket = require("./WebSockets/Socket");
   const initApiRoutes = require("./routes/api");
   const initWebRoutes = require("./routes/web");
@@ -20,8 +19,8 @@
   const server = http.createServer(app);
   const io = new Server(server);
 
-  // MiddlewareNumero
-  // app.use(express.static("public"));
+  // Middlewares
+  app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(cookieParser());
   
