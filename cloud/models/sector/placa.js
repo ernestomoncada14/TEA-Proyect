@@ -1,30 +1,31 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  return sequelize.define("Valvula", {
-    ValvulaId: {
+  return sequelize.define("Placa", {
+    PlacaId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    PlacaId: {
+    SectorId: {
       type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    Descripcion: {
+      type: DataTypes.TEXT,
       allowNull: false
     },
     Ubicacion: {
       type: DataTypes.GEOMETRY("POINT"),
       allowNull: true
     },
-    Descripcion: {
-      type: DataTypes.TEXT,
-      allowNull: false
-    },
-    Estado: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false
+    PuertoSerie: {
+      type: DataTypes.STRING(15),
+      allowNull: false,
+      unique: true
     }
   }, {
-    tableName: "Valvula",
+    tableName: "Placa",
     timestamps: false
   });
 };

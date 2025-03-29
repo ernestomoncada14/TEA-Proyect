@@ -2,28 +2,25 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   return sequelize.define("HistorialFlujo", {
-    id_historial: {
+    HistorialId: {
       type: DataTypes.INTEGER,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
-    id_sensor: {
+    SensorId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    valor_flujo: {
+    ValorFlujo: {
       type: DataTypes.FLOAT,
       allowNull: false
     },
-    fecha: {
-      type: DataTypes.DATEONLY,
-      allowNull: false
-    },
-    tiempo: {
-      type: DataTypes.TIME,
+    Fecha: {
+      type: DataTypes.DATE,
       allowNull: false
     }
   }, {
-    tableName: "historial_flujo",
+    tableName: "HistorialFlujo",
     timestamps: false
   });
 };

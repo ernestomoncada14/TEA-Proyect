@@ -3,284 +3,401 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('sector', {
-      id_sector: {
+
+    // Sector
+    await queryInterface.createTable('Sector', {
+      SectorId: {
         type: Sequelize.INTEGER,
+        primaryKey: true,
         allowNull: false,
-        primaryKey: true
+        autoIncrement: true
       },
-      nombre: {
+      Nombre: {
         type: Sequelize.STRING(30),
         allowNull: false
       },
-      ubicacion: {
-        type: Sequelize.STRING(225),
-        allowNull: false
+      GeoMetria: {
+        type: Sequelize.GEOMETRY('POLYGON')
       },
-      descripcion: {
+      Descripcion: {
         type: Sequelize.TEXT,
         allowNull: false
       }
     });
 
-    await queryInterface.createTable('rol', {
-      id_rol: {
+    // Rol
+    await queryInterface.createTable('Rol', {
+      RolId: {
         type: Sequelize.INTEGER,
+        primaryKey: true,
         allowNull: false,
-        primaryKey: true
+        autoIncrement: true
       },
-      nombre_rol: {
+      NombreRol: {
         type: Sequelize.STRING(15),
         allowNull: false
       }
     });
 
-    await queryInterface.createTable('permiso', {
-      id_permiso: {
+    // Permiso
+    await queryInterface.createTable('Permiso', {
+      PermisoId: {
         type: Sequelize.INTEGER,
+        primaryKey: true,
         allowNull: false,
-        primaryKey: true
+        autoIncrement: true
       },
-      permiso: {
-        type: Sequelize.STRING(15),
-        allowNull: false
+      NombrePermiso: {
+        type: Sequelize.STRING(255),
+        allowNull: false,
+        unique: true
       }
     });
 
-    await queryInterface.createTable('rol_permiso', {
-      id_rol: {
+    // RolPermiso
+    await queryInterface.createTable('RolPermiso', {
+      PermisoId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         primaryKey: true,
         references: {
-          model: 'rol',
-          key: 'id_rol'
+          model: 'Permiso',
+          key: 'PermisoId'
         },
         onDelete: 'CASCADE'
       },
-      id_permiso: {
+      RolId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         primaryKey: true,
         references: {
-          model: 'permiso',
-          key: 'id_permiso'
+          model: 'Rol',
+          key: 'RolId'
         },
         onDelete: 'CASCADE'
       }
     });
 
-    await queryInterface.createTable('usuario', {
-      id_usuario: {
+    // Usuario
+    await queryInterface.createTable('Usuario', {
+      UsuarioId: {
         type: Sequelize.INTEGER,
+        primaryKey: true,
         allowNull: false,
-        primaryKey: true
+        autoIncrement: true
       },
-      id_rol: {
+      RolId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'rol',
-          key: 'id_rol'
+          model: 'Rol',
+          key: 'RolId'
         },
         onDelete: 'CASCADE'
       },
-      nombre_completo: {
+      NombreCompleto: {
         type: Sequelize.STRING(50),
         allowNull: false
       },
-      correo: {
+      Correo: {
         type: Sequelize.STRING(50),
         allowNull: false,
         unique: true
       },
-      contrasenia: {
+      Contrasenia: {
         type: Sequelize.STRING(255),
         allowNull: false
       }
     });
 
-    await queryInterface.createTable('sensor_flujo', {
-      id_sensor: {
+    // Placa
+    await queryInterface.createTable('Placa', {
+      PlacaId: {
         type: Sequelize.INTEGER,
+        primaryKey: true,
         allowNull: false,
-        primaryKey: true
+        autoIncrement: true
       },
-      id_sector: {
+      SectorId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'sector',
-          key: 'id_sector'
+          model: 'Sector',
+          key: 'SectorId'
         },
         onDelete: 'CASCADE'
       },
-      ubicacion: {
-        type: Sequelize.STRING(225),
+      Descripcion: {
+        type: Sequelize.TEXT,
         allowNull: false
       },
-      descripcion: {
+      Ubicacion: {
+        type: Sequelize.GEOMETRY('POINT')
+      },
+      PuertoSerie: {
+        type: Sequelize.STRING(15),
+        allowNull: false,
+        unique: true
+      }
+    });
+
+    // Valvula
+    await queryInterface.createTable('Valvula', {
+      ValvulaId: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true
+      },
+      PlacaId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Placa',
+          key: 'PlacaId'
+        },
+        onDelete: 'CASCADE'
+      },
+      Ubicacion: {
+        type: Sequelize.GEOMETRY('POINT')
+      },
+      Descripcion: {
         type: Sequelize.TEXT,
+        allowNull: false
+      },
+      Estado: {
+        type: Sequelize.BOOLEAN,
         allowNull: false
       }
     });
 
-    await queryInterface.createTable('valvula', {
-      id_valvula: {
+    // SensorFlujo
+    await queryInterface.createTable('SensorFlujo', {
+      SensorId: {
         type: Sequelize.INTEGER,
+        primaryKey: true,
         allowNull: false,
-        primaryKey: true
+        autoIncrement: true
       },
-      id_sector: {
+      ValvulaId: {
         type: Sequelize.INTEGER,
         allowNull: false,
+        unique: true,
         references: {
-          model: 'sector',
-          key: 'id_sector'
+          model: 'Valvula',
+          key: 'ValvulaId'
         },
         onDelete: 'CASCADE'
       },
-      ubicacion: {
-        type: Sequelize.STRING(225),
+      Ubicacion: {
+        type: Sequelize.GEOMETRY('POINT')
+      },
+      Descripcion: {
+        type: Sequelize.TEXT,
         allowNull: false
       },
-      descripcion: {
-        type: Sequelize.TEXT,
+      Estado: {
+        type: Sequelize.BOOLEAN,
         allowNull: false
       }
     });
 
-    await queryInterface.createTable('dia_semana', {
-      id_dia: {
+    // Hogar
+    await queryInterface.createTable('Hogar', {
+      HogarId: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true
+      },
+      SectorId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        primaryKey: true
+        references: {
+          model: 'Sector',
+          key: 'SectorId'
+        },
+        onDelete: 'CASCADE'
       },
-      dia: {
+      Descripcion: {
+        type: Sequelize.STRING(100),
+        allowNull: false
+      },
+      GeoMetria: {
+        type: Sequelize.GEOMETRY('POLYGON')
+      }
+    });
+
+    // UsuarioHogar
+    await queryInterface.createTable('UsuarioHogar', {
+      HogarId: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        references: {
+          model: 'Hogar',
+          key: 'HogarId'
+        },
+        onDelete: 'CASCADE'
+      },
+      UsuarioId: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        references: {
+          model: 'Usuario',
+          key: 'UsuarioId'
+        },
+        onDelete: 'CASCADE'
+      }
+    });
+
+    // DiaSemana
+    await queryInterface.createTable('DiaSemana', {
+      DiaId: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true
+      },
+      Dia: {
         type: Sequelize.STRING(12),
         allowNull: false,
         unique: true
       }
     });
 
-    await queryInterface.createTable('programacion_horario', {
-      id_programacion: {
+    // ProgramacionHorario
+    await queryInterface.createTable('ProgramacionHorario', {
+      ProgramacionId: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true
+      },
+      SectorId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        primaryKey: true
+        references: {
+          model: 'Sector',
+          key: 'SectorId'
+        },
+        onDelete: 'CASCADE'
       },
-      minuto_final: {
+      UsuarioId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Usuario',
+          key: 'UsuarioId'
+        },
+        onDelete: 'CASCADE'
+      },
+      HoraInicio: {
+        type: Sequelize.TIME,
         allowNull: false
       },
-      id_sector: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'sector',
-          key: 'id_sector'
-        },
-        onDelete: 'CASCADE'
-      },
-      id_dia: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'dia_semana',
-          key: 'id_dia'
-        },
-        onDelete: 'CASCADE'
-      },
-      id_usuario: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'usuario',
-          key: 'id_usuario'
-        },
-        onDelete: 'CASCADE'
-      },
-      hora_inicio: {
-        type: Sequelize.DATE,
+      HoraFinal: {
+        type: Sequelize.TIME,
         allowNull: false
       },
-      hora_final: {
-        type: Sequelize.DATE,
+      Estado: {
+        type: Sequelize.BOOLEAN,
         allowNull: false
       }
     });
 
-    await queryInterface.createTable('historial_flujo', {
-      id_historial: {
+    // DiaProgramacion
+    await queryInterface.createTable('DiaProgramacion', {
+      DiaHorarioId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
       },
-      id_sensor: {
+      DiaId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'sensor_flujo',
-          key: 'id_sensor'
+          model: 'DiaSemana',
+          key: 'DiaId'
         },
         onDelete: 'CASCADE'
       },
-      valor_flujo: {
+      ProgramacionId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'ProgramacionHorario',
+          key: 'ProgramacionId'
+        },
+        onDelete: 'CASCADE'
+      }
+    });
+
+    // HistorialFlujo
+    await queryInterface.createTable('HistorialFlujo', {
+      HistorialId: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      SensorId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'SensorFlujo',
+          key: 'SensorId'
+        },
+        onDelete: 'CASCADE'
+      },
+      ValorFlujo: {
         type: Sequelize.FLOAT,
         allowNull: false
       },
-      fecha: {
-        type: Sequelize.DATEONLY,
-        allowNull: false
-      },
-      tiempo: {
-        type: Sequelize.TIME,
+      Fecha: {
+        type: Sequelize.DATE,
         allowNull: false
       }
     });
 
-    await queryInterface.createTable('historial_valvula', {
-      id_historial: {
+    // HistorialValvula
+    await queryInterface.createTable('HistorialValvula', {
+      HistorialId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
       },
-      id_valvula: {
+      ValvulaId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'valvula',
-          key: 'id_valvula'
+          model: 'Valvula',
+          key: 'ValvulaId'
         },
         onDelete: 'CASCADE'
       },
-      estado: {
+      Estado: {
         type: Sequelize.BOOLEAN,
         allowNull: false
       },
-      fecha: {
-        type: Sequelize.DATEONLY,
-        allowNull: false
-      },
-      tiempo: {
-        type: Sequelize.TIME,
+      Fecha: {
+        type: Sequelize.DATE,
         allowNull: false
       }
     });
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('historial_valvula');
-    await queryInterface.dropTable('historial_flujo');
-    await queryInterface.dropTable('programacion_horario');
-    await queryInterface.dropTable('dia_semana');
-    await queryInterface.dropTable('valvula');
-    await queryInterface.dropTable('sensor_flujo');
-    await queryInterface.dropTable('usuario');
-    await queryInterface.dropTable('rol_permiso');
-    await queryInterface.dropTable('permiso');
-    await queryInterface.dropTable('rol');
-    await queryInterface.dropTable('sector');
+    await queryInterface.dropTable('HistorialValvula');
+    await queryInterface.dropTable('HistorialFlujo');
+    await queryInterface.dropTable('DiaProgramacion');
+    await queryInterface.dropTable('ProgramacionHorario');
+    await queryInterface.dropTable('DiaSemana');
+    await queryInterface.dropTable('UsuarioHogar');
+    await queryInterface.dropTable('Hogar');
+    await queryInterface.dropTable('SensorFlujo');
+    await queryInterface.dropTable('Valvula');
+    await queryInterface.dropTable('Placa');
+    await queryInterface.dropTable('Usuario');
+    await queryInterface.dropTable('RolPermiso');
+    await queryInterface.dropTable('Permiso');
+    await queryInterface.dropTable('Rol');
+    await queryInterface.dropTable('Sector');
   }
 };
-

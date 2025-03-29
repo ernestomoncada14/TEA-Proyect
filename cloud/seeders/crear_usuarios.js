@@ -2,51 +2,48 @@ const { sequelize, Usuario } = require("../models");
 
 (async () => {
   try {
-    // Conectar a la base de datos
     await sequelize.authenticate();
     console.log("Conectado a la base de datos");
 
-    // Crear 3 usuarios
     const usuarios = [
       {
-        id_usuario: 1,
-        id_rol: 1,
-        nombre_completo: "api user",
-        correo: "apiUser1418API@sistema-agua",
-        contrasenia: "DjtdDtsDvty;dErbEh,dd{45$QdiEDED"
+        RolId: 1,
+        NombreCompleto: "api user",
+        Correo: "apiUser1418API@sistema-agua",
+        Contrasenia: "DjtdDtsDvty;dErbEh,dd{45$QdiEDED"
       },
       {
-        id_usuario: 2,
-        id_rol: 2,
-        nombre_completo: "Ernesto(neto) Moncada",
-        correo: "neto@example.com",
-        contrasenia: "123"
+        RolId: 2,
+        NombreCompleto: "Ernesto(neto) Moncada",
+        Correo: "neto@example.com",
+        Contrasenia: "123"
       },
       {
-        id_usuario: 3,
-        id_rol: 3,
-        nombre_completo: "Daniel Henrriquez",
-        correo: "daniel@example.com",
-        contrasenia: "123"
+        RolId: 3,
+        NombreCompleto: "Daniel Henrriquez",
+        Correo: "daniel@example.com",
+        Contrasenia: "123"
       },
       {
-        id_usuario: 4,
-        id_rol: 3,
-        nombre_completo: "Ingrid Bauedano",
-        correo: "ingrid@example.com",
-        contrasenia: "123"
+        RolId: 3,
+        NombreCompleto: "Ingrid Bauedano",
+        Correo: "ingrid@example.com",
+        Contrasenia: "123"
       }
     ];
 
     for (const u of usuarios) {
-      await Usuario.create(u);
-      console.log(`Usuario creado: ${u.nombre_completo}`);
+      await Usuario.findOrCreate({
+        where: { Correo: u.Correo },
+        defaults: u
+      });
+      console.log(`✔ Usuario registrado o existente: ${u.NombreCompleto}`);
     }
 
-    console.log("Todos los usuarios fueron creados correctamente.");
     await sequelize.close();
+    console.log("✔ Todos los usuarios fueron creados correctamente.");
   } catch (err) {
-    console.error("Error al crear usuarios:", err);
+    console.error("❌ Error al crear usuarios:", err);
     await sequelize.close();
   }
 })();

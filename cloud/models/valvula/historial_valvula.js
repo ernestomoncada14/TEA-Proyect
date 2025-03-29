@@ -2,28 +2,25 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   return sequelize.define("HistorialValvula", {
-    id_historial: {
+    HistorialId: {
       type: DataTypes.INTEGER,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
-    id_valvula: {
+    ValvulaId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    estado: {
+    Estado: {
       type: DataTypes.BOOLEAN,
       allowNull: false
     },
-    fecha: {
-      type: DataTypes.DATEONLY,
-      allowNull: false
-    },
-    tiempo: {
-      type: DataTypes.TIME,
+    Fecha: {
+      type: DataTypes.DATE,
       allowNull: false
     }
   }, {
-    tableName: "historial_valvula",
+    tableName: "HistorialValvula",
     timestamps: false
   });
 };

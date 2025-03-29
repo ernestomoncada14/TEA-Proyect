@@ -2,29 +2,30 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   return sequelize.define("Usuario", {
-    id_usuario: {
+    UsuarioId: {
       type: DataTypes.INTEGER,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
-    id_rol: {
+    RolId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    nombre_completo: {
+    NombreCompleto: {
       type: DataTypes.STRING(50),
       allowNull: false
     },
-    correo: {
+    Correo: {
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true
     },
-    contrasenia: {
-      type: DataTypes.STRING(30),
+    Contrasenia: {
+      type: DataTypes.STRING(255),
       allowNull: false
     }
   }, {
-    tableName: "usuario",
+    tableName: "Usuario",
     timestamps: false
   });
 };

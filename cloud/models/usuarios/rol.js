@@ -2,16 +2,17 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   return sequelize.define("Rol", {
-    id_rol: {
+    RolId: {
       type: DataTypes.INTEGER,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
-    nombre_rol: {
+    NombreRol: {
       type: DataTypes.STRING(15),
       allowNull: false
     }
   }, {
-    tableName: "rol",
+    tableName: "Rol",
     timestamps: false
   });
 };

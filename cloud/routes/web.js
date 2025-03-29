@@ -13,6 +13,23 @@ module.exports = (db, io) => {
     res.sendFile(view("panel"));
   });
 
+  router.get("/Sectores", verificarToken, requierePermiso("ver", "crear", "editar", "eliminar"), async (req, res) => {
+    res.sendFile(view("ver_sectores"));
+  });
+
+  router.get("/sector/:id", verificarToken, async (req, res) => {
+    try {
+      const SectorId = req.params.id;
+  
+      res.render("sector", { SectorId });
+    } catch (err) {
+      console.error("Error en ruta /sector/:id", err);
+      res.status(500).send("Error interno del servidor");
+    }
+  });
+  
+  
+
   router.get("/logout", (req, res) => {
     res.clearCookie("token");
     // res.json({ status: "ok", message: "Sesión cerrada" });

@@ -18,12 +18,19 @@ function verificarToken(req, res, next) {
 
 function requierePermiso(permiso) {
   return (req, res, next) => {
-    if (!req.usuario || !req.usuario.permisos.includes(permiso)) {
-      return res.status(403).json({ status: "error", message: "No autorizado" });
+
+    if (
+      !req.usuario ||
+      !Array.isArray(req.usuario.permisos) ||
+      !req.usuario.permisos.includes(permiso)
+    ) {
+      return res.status(403).json({ status: "error", message: "Permiso denegado" });
     }
+
     next();
   };
 }
+
 
 module.exports = {
   verificarToken,

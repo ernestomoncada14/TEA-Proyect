@@ -6,52 +6,49 @@ const { sequelize, Rol, Permiso, RolPermiso } = require("../models");
     console.log("Conectado a la base de datos");
 
     // Definir roles
-    const roles = [
-      { id_rol: 1, nombre_rol: "admin" },
-      { id_rol: 2, nombre_rol: "fontanero" },
-      { id_rol: 3, nombre_rol: "habitante" }
-    ];
+    const roles = ["admin", "fontanero", "habitante"];
 
     // Definir permisos
-    const permisos = [
-      { id_permiso: 1, permiso: "ver" },
-      { id_permiso: 2, permiso: "crear" },
-      { id_permiso: 3, permiso: "editar" },
-      { id_permiso: 4, permiso: "eliminar" },
-      { id_permiso: 5, permiso: "api" }
-    ];
+    const permisos = ["ver", "crear", "editar", "eliminar", "api"];
 
     // Crear roles si no existen
-    for (const rol of roles) {
-      await Rol.findOrCreate({ where: { id_rol: rol.id_rol }, defaults: rol });
-      console.log(`Rol creado o ya existente: ${rol.nombre_rol}`);
+    const rolMap = {};
+    for (const nombre of roles) {
+      const [rol] = await Rol.findOrCreate({
+        where: { NombreRol: nombre }
+      });
+      rolMap[nombre] = rol.RolId;
+      console.log(`Rol creado o ya existente: ${nombre}`);
     }
 
     // Crear permisos si no existen
-    for (const permiso of permisos) {
-      await Permiso.findOrCreate({ where: { id_permiso: permiso.id_permiso }, defaults: permiso });
-      console.log(`Permiso creado o ya existente: ${permiso.permiso}`);
+    const permisoMap = {};
+    for (const nombre of permisos) {
+      const [permiso] = await Permiso.findOrCreate({
+        where: { NombrePermiso: nombre }
+      });
+      permisoMap[nombre] = permiso.PermisoId;
+      console.log(`Permiso creado o ya existente: ${nombre}`);
     }
 
     // Asociaciones de ejemplo entre roles y permisos
-    const asociaciones = [
-      // Admin tiene todos los permisos
-      { id_rol: 1, permisos: [1, 2, 3, 4, 5] },
-      // fontanero solo puede ver, crear, editar y eliminar
-      { id_rol: 2, permisos: [1, 2, 3, 4] },
-      // habitante solo puede ver
-      { id_rol: 3, permisos: [1] }
-    ];
+    const asociaciones = {
+      admin: ["ver", "crear", "editar", "eliminar", "api"],
+      fontanero: ["ver", "crear", "editar", "eliminar"],
+      habitante: ["ver"]
+    };
 
-    for (const asociacion of asociaciones) {
-      for (const id_permiso of asociacion.permisos) {
+    for (const [nombreRol, permisosAsignados] of Object.entries(asociaciones)) {
+      const rolId = rolMap[nombreRol];
+      for (const nombrePermiso of permisosAsignados) {
+        const permisoId = permisoMap[nombrePermiso];
         await RolPermiso.findOrCreate({
           where: {
-            id_rol: asociacion.id_rol,
-            id_permiso: id_permiso
+            RolId: rolId,
+            PermisoId: permisoId
           }
         });
-        console.log(`Asociación: Rol ${asociacion.id_rol} → Permiso ${id_permiso}`);
+        console.log(`Asociación: Rol ${nombreRol} → Permiso ${nombrePermiso}`);
       }
     }
 

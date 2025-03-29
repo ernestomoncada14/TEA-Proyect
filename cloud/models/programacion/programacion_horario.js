@@ -2,36 +2,33 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   return sequelize.define("ProgramacionHorario", {
-    id_programacion: {
+    ProgramacionId: {
       type: DataTypes.INTEGER,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
-    minuto_final: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    id_sector: {
+    SectorId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    id_dia: {
+    UsuarioId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    id_usuario: {
-      type: DataTypes.INTEGER,
+    HoraInicio: {
+      type: DataTypes.TIME,
       allowNull: false
     },
-    hora_inicio: {
-      type: DataTypes.DATE,
+    HoraFinal: {
+      type: DataTypes.TIME,
       allowNull: false
     },
-    hora_final: {
-      type: DataTypes.DATE,
+    Estado: {
+      type: DataTypes.BOOLEAN,
       allowNull: false
     }
   }, {
-    tableName: "programacion_horario",
+    tableName: "ProgramacionHorario",
     timestamps: false
   });
 };

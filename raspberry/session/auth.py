@@ -4,7 +4,7 @@ from config.config import BASE_URL, CORREO, CONTRASENIA
 session = requests.Session()
 
 def login() -> bool:
-    response = session.post(f"{BASE_URL}/api/login", json={
+    response = session.post(f"{BASE_URL}/api/login-client", json={
         "correo": CORREO,
         "contrasenia": CONTRASENIA
     })

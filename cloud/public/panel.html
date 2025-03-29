@@ -11,6 +11,8 @@
   <p><strong>Rol:</strong> <span id="rol"></span></p>
   <p><strong>Permisos:</strong> <span id="permisos"></span></p>
 
+  <a href="/sectores">Ver los sectores</a>
+
   <button id="logoutBtn">Cerrar sesión</button>
 
   <script>
@@ -28,7 +30,8 @@
       })
       .catch(() => {
         // Si no hay sesión válida, redirigir al login
-        window.location.href = "/";
+        document.getElementById("rol").textContent = "No posee permisos para obtener el Rol";
+        document.getElementById("permisos").textContent = "No posee permisos para obtener los permisos";
       });
   
     // Botón de logout

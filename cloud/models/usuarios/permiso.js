@@ -2,16 +2,18 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   return sequelize.define("Permiso", {
-    id_permiso: {
+    PermisoId: {
       type: DataTypes.INTEGER,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
-    permiso: {
-      type: DataTypes.STRING(15),
-      allowNull: false
+    NombrePermiso: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true
     }
   }, {
-    tableName: "permiso",
+    tableName: "Permiso",
     timestamps: false
   });
 };

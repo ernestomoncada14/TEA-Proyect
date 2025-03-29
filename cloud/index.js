@@ -1,5 +1,6 @@
 (async () => {
   const express = require("express");
+  const path = require("path");
   const http = require("http");
   const { Server } = require("socket.io");
 
@@ -23,6 +24,12 @@
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(cookieParser());
+
+  app.set("view engine", "ejs");
+  app.set("views", path.join(__dirname, "views")); // carpeta donde pondrás los .ejs
+
+  // Servir archivos estáticos (si usas Bootstrap o imágenes)
+  app.use(express.static(path.join(__dirname, "public")));
   
   // Rutas
   app.use("/", initWebRoutes(db, io));

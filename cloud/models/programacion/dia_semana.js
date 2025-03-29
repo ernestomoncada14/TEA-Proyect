@@ -2,17 +2,18 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   return sequelize.define("DiaSemana", {
-    id_dia: {
+    DiaId: {
       type: DataTypes.INTEGER,
-      primaryKey: true
+      primaryKey: true,
+      autoIncrement: true
     },
-    dia: {
+    Dia: {
       type: DataTypes.STRING(12),
       allowNull: false,
       unique: true
     }
   }, {
-    tableName: "dia_semana",
+    tableName: "DiaSemana",
     timestamps: false
   });
 };

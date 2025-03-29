@@ -5,75 +5,111 @@ const sequelize = require("../config/database");
 
 // Importar modelos
 const Sector = require("./sector/sector")(sequelize);
+const Placa = require("./sector/placa")(sequelize);
+const Hogar = require("./sector/hogar")(sequelize);
+
 const Rol = require("./usuarios/rol")(sequelize);
 const Permiso = require("./usuarios/permiso")(sequelize);
 const RolPermiso = require("./usuarios/rol_permiso")(sequelize);
 const Usuario = require("./usuarios/usuario")(sequelize);
-const SensorFlujo = require("./sensor/sensor_flujo")(sequelize);
+const UsuarioHogar = require("./usuarios/usuario_hogar")(sequelize);
+
 const Valvula = require("./valvula/valvula")(sequelize);
+const HistorialValvula = require("./valvula/historial_valvula")(sequelize);
+
+const SensorFlujo = require("./sensor/sensor_flujo")(sequelize);
+const HistorialFlujo = require("./sensor/historial_flujo")(sequelize);
+
 const DiaSemana = require("./programacion/dia_semana")(sequelize);
 const ProgramacionHorario = require("./programacion/programacion_horario")(sequelize);
-const HistorialFlujo = require("./sensor/historial_flujo")(sequelize);
-const HistorialValvula = require("./valvula/historial_valvula")(sequelize);
+const DiaProgramacion = require("./programacion/dia_programacion")(sequelize);
 
 // RELACIONES
 
 // Usuario - Rol
-Usuario.belongsTo(Rol, { foreignKey: "id_rol" });
-Rol.hasMany(Usuario, { foreignKey: "id_rol" });
+Usuario.belongsTo(Rol, { foreignKey: "RolId" });
+Rol.hasMany(Usuario, { foreignKey: "RolId" });
 
-// Rol - Permiso (Muchos a muchos)
+// Rol - Permiso (muchos a muchos)
 Rol.belongsToMany(Permiso, {
   through: RolPermiso,
-  foreignKey: "id_rol",
-  otherKey: "id_permiso"
+  foreignKey: "RolId",
+  otherKey: "PermisoId"
 });
 Permiso.belongsToMany(Rol, {
   through: RolPermiso,
-  foreignKey: "id_permiso",
-  otherKey: "id_rol"
+  foreignKey: "PermisoId",
+  otherKey: "RolId"
 });
 
-// SensorFlujo - Sector
-SensorFlujo.belongsTo(Sector, { foreignKey: "id_sector" });
-Sector.hasMany(SensorFlujo, { foreignKey: "id_sector" });
+// Usuario - Hogar (muchos a muchos)
+Usuario.belongsToMany(Hogar, {
+  through: UsuarioHogar,
+  foreignKey: "UsuarioId",
+  otherKey: "HogarId"
+});
+Hogar.belongsToMany(Usuario, {
+  through: UsuarioHogar,
+  foreignKey: "HogarId",
+  otherKey: "UsuarioId"
+});
 
-// Valvula - Sector
-Valvula.belongsTo(Sector, { foreignKey: "id_sector" });
-Sector.hasMany(Valvula, { foreignKey: "id_sector" });
+// Sector - Placa
+Placa.belongsTo(Sector, { foreignKey: "SectorId" });
+Sector.hasMany(Placa, { foreignKey: "SectorId" });
+
+// Sector - Hogar
+Hogar.belongsTo(Sector, { foreignKey: "SectorId" });
+Sector.hasMany(Hogar, { foreignKey: "SectorId" });
+
+// Placa - Válvula
+Valvula.belongsTo(Placa, { foreignKey: "PlacaId" });
+Placa.hasMany(Valvula, { foreignKey: "PlacaId" });
+
+// Válvula - SensorFlujo
+SensorFlujo.belongsTo(Valvula, { foreignKey: "ValvulaId" });
+Valvula.hasMany(SensorFlujo, { foreignKey: "ValvulaId" });
+
+// SensorFlujo - HistorialFlujo
+HistorialFlujo.belongsTo(SensorFlujo, { foreignKey: "SensorId" });
+SensorFlujo.hasMany(HistorialFlujo, { foreignKey: "SensorId" });
+
+// Valvula - HistorialValvula
+HistorialValvula.belongsTo(Valvula, { foreignKey: "ValvulaId" });
+Valvula.hasMany(HistorialValvula, { foreignKey: "ValvulaId" });
 
 // ProgramacionHorario - Usuario
-ProgramacionHorario.belongsTo(Usuario, { foreignKey: "id_usuario" });
-Usuario.hasMany(ProgramacionHorario, { foreignKey: "id_usuario" });
+ProgramacionHorario.belongsTo(Usuario, { foreignKey: "UsuarioId" });
+Usuario.hasMany(ProgramacionHorario, { foreignKey: "UsuarioId" });
 
 // ProgramacionHorario - Sector
-ProgramacionHorario.belongsTo(Sector, { foreignKey: "id_sector" });
-Sector.hasMany(ProgramacionHorario, { foreignKey: "id_sector" });
+ProgramacionHorario.belongsTo(Sector, { foreignKey: "SectorId" });
+Sector.hasMany(ProgramacionHorario, { foreignKey: "SectorId" });
 
-// ProgramacionHorario - DiaSemana
-ProgramacionHorario.belongsTo(DiaSemana, { foreignKey: "id_dia" });
-DiaSemana.hasMany(ProgramacionHorario, { foreignKey: "id_dia" });
+// ProgramacionHorario - DiaProgramacion
+DiaProgramacion.belongsTo(ProgramacionHorario, { foreignKey: "ProgramacionId" });
+ProgramacionHorario.hasMany(DiaProgramacion, { foreignKey: "ProgramacionId" });
 
-// HistorialFlujo - SensorFlujo
-HistorialFlujo.belongsTo(SensorFlujo, { foreignKey: "id_sensor" });
-SensorFlujo.hasMany(HistorialFlujo, { foreignKey: "id_sensor" });
-
-// HistorialValvula - Valvula
-HistorialValvula.belongsTo(Valvula, { foreignKey: "id_valvula" });
-Valvula.hasMany(HistorialValvula, { foreignKey: "id_valvula" });
+// DiaSemana - DiaProgramacion
+DiaProgramacion.belongsTo(DiaSemana, { foreignKey: "DiaId" });
+DiaSemana.hasMany(DiaProgramacion, { foreignKey: "DiaId" });
 
 // Exportar todo
 module.exports = {
   sequelize,
   Sector,
+  Placa,
+  Hogar,
   Rol,
   Permiso,
   RolPermiso,
   Usuario,
-  SensorFlujo,
+  UsuarioHogar,
   Valvula,
+  HistorialValvula,
+  SensorFlujo,
+  HistorialFlujo,
   DiaSemana,
   ProgramacionHorario,
-  HistorialFlujo,
-  HistorialValvula
+  DiaProgramacion
 };

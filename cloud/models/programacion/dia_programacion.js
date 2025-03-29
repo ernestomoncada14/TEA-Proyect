@@ -1,26 +1,22 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  return sequelize.define("Sector", {
-    SectorId: {
+  return sequelize.define("DiaProgramacion", {
+    DiaHorarioId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true
     },
-    Nombre: {
-      type: DataTypes.STRING(30),
+    DiaId: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
-    GeoMetria: {
-      type: DataTypes.GEOMETRY("POLYGON"),
-      allowNull: true
-    },
-    Descripcion: {
-      type: DataTypes.TEXT,
+    ProgramacionId: {
+      type: DataTypes.INTEGER,
       allowNull: false
     }
   }, {
-    tableName: "Sector",
+    tableName: "DiaProgramacion",
     timestamps: false
   });
 };
