@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitor de Programaciones</title>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <h1>Monitor en Tiempo Real</h1>
+  <ul id="listaProgramaciones"></ul>
+
+  <script>
+    const socket = io();
+
+    socket.on("connect", () => {
+      console.log("🟢 Conectado a WebSocket desde monitor");
+    });
+
+    socket.on("nueva_programacion", (data) => {
+      const programacion = typeof data === "string" ? JSON.parse(data) : data;
+      console.log("📡 Nueva programación recibida:", programacion);
+
+      const item = document.createElement("li");
+      item.textContent = `ID: ${programacion.ProgramacionId}, Horario: ${programacion.HoraInicio} - ${programacion.HoraFinal}, Días: ${programacion.Dia}`;
+      document.getElementById("listaProgramaciones").appendChild(item);
+    });
+  </script>
+</body>
+</html>

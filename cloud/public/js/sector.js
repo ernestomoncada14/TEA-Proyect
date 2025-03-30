@@ -1,8 +1,10 @@
 // sector.js
 
 // const sectorid = document.getElementById("formProgramacion").SectorId.value;
+// const socket = io(); // se conecta automáticamente al mismo host
 
 // ==============================================================================================================================
+const valvulaMarkers = {}; // clave: ValvulaId, valor: marker
 
 async function obtenerSector() {
     try {
@@ -67,11 +69,14 @@ async function cargarDatos() {
             
                 placas.forEach(placa => {
                     placa.Valvulas.forEach(valvula => {
+                        // Agregar Historial Valvulas
+                        cargarHistoriales(valvula);
                         // Agregar al mapa
                         if (valvula.Ubicacion) {
-                            L.marker([valvula.Ubicacion.coordinates[1], valvula.Ubicacion.coordinates[0]])
+                            const marker = L.marker([valvula.Ubicacion.coordinates[1], valvula.Ubicacion.coordinates[0]])
                                 .addTo(map)
                                 .bindPopup(`Válvula: ${valvula.Descripcion}`);
+                            valvulaMarkers[valvula.ValvulaId] = marker;
                         }
             
                         // Agregar a tabla de válvulas
@@ -80,14 +85,34 @@ async function cargarDatos() {
                             <td>${valvula.ValvulaId}</td>
                             <td>${valvula.Descripcion}</td>
                             <td>${placa.Descripcion}</td>
-                            <td>${valvula.Estado ? "Activa" : "Inactiva"}</td>
+                            <td>
+                                <span class="badge ${valvula.Estado ? "bg-success" : "bg-secondary"} estado-valvula">
+                                    ${valvula.Estado ? "Activa" : "Inactiva"}
+                                </span>
+                            </td>
                             <td>${valvula.Ubicacion ? JSON.stringify(valvula.Ubicacion.coordinates) : "-"}</td>
+                            <td>
+                                <button class="btn btn-sm btn-${valvula.Estado ? "danger" : "success"} toggle-valvula"
+                                        data-id="${valvula.ValvulaId}"
+                                        data-estado="${valvula.Estado}">
+                                ${valvula.Estado ? "Cerrar" : "Abrir"}
+                                </button>
+                                <button class="btn btn-sm btn-warning editar-valvula"
+                                        data-id="${valvula.ValvulaId}"
+                                        data-descripcion="${valvula.Descripcion}"
+                                        data-ubicacion='${JSON.stringify(valvula.Ubicacion)}'
+                                        data-placa-id="${placa.PlacaId}">
+                                    Editar
+                                </button>
+                            </td>
                         `;
                         cuerpoValvulas.appendChild(filaValvula);
             
                         // Agregar sensores asociados
                         if (valvula.SensorFlujos && Array.isArray(valvula.SensorFlujos)) {
                             valvula.SensorFlujos.forEach(sensor => {
+                                // Agregar Historial Sensores
+                                cargarHistorialSensor(sensor);
                                 // Agregar al mapa
                                 if (sensor.Ubicacion) {
                                     L.marker([sensor.Ubicacion.coordinates[1], sensor.Ubicacion.coordinates[0]], {
@@ -98,11 +123,16 @@ async function cargarDatos() {
             
                                 // Agregar a tabla de sensores
                                 const filaSensor = document.createElement("tr");
+                                filaSensor.setAttribute("data-sensor-id", sensor.SensorId);
                                 filaSensor.innerHTML = `
                                     <td>${sensor.SensorId}</td>
                                     <td>${sensor.Descripcion}</td>
                                     <td>${placa.Descripcion}</td>
-                                    <td>${sensor.Estado ? "Activo" : "Inactivo"}</td>
+                                    <td>
+                                        <span class="badge ${sensor.Estado ? "bg-success" : "bg-secondary"} estado-valvula">
+                                            ${sensor.Estado ? "Activo" : "Inactivo"}
+                                        </span>
+                                    </td>
                                     <td>${sensor.Ubicacion ? JSON.stringify(sensor.Ubicacion.coordinates) : "-"}</td>
                                 `;
                                 cuerpoSensores.appendChild(filaSensor);
@@ -131,9 +161,9 @@ async function cargarDatos() {
             <td>${p.HoraInicio}</td>
             <td>${p.HoraFinal}</td>
             <td>
-            <span class="badge bg-${p.Estado ? "success" : "secondary"}">
-                ${p.Estado ? "Activa" : "Inactiva"}
-            </span>
+                <span class="badge bg-${p.Estado ? "success" : "secondary"}">
+                    ${p.Estado ? "Activa" : "Inactiva"}
+                </span>
             </td>
             <td>
             <button class="btn btn-sm btn-${p.Estado ? "danger" : "success"} toggle-estado"
@@ -164,7 +194,76 @@ async function cargarDatos() {
 
 }
 
-document.addEventListener("DOMContentLoaded", cargarDatos());
+document.addEventListener("DOMContentLoaded", cargarDatos);
+
+document.addEventListener("DOMContentLoaded", () => {
+    let mapaModal;
+    let markerModal;
+    
+    function inicializarMapaModal() {
+        if (mapaModal) return; // ya inicializado
+    
+        mapaModal = L.map('mapaUbicacion').setView([14.0723, -87.1921], 13); // Coordenadas base en Tegucigalpa
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+        }).addTo(mapaModal);
+
+        let lat = parseFloat(document.getElementById("editLatitud").value);
+        let lng = parseFloat(document.getElementById("editLongitud").value);
+
+        // Validar si son números válidos
+        if (isNaN(lat) || isNaN(lng)) {
+            // Asignar valores predeterminados (Tegucigalpa)
+            lat = 13.5;
+            lng = -89.2;
+        }
+
+        const coords = [lat, lng];
+        markerModal = L.marker([coords[1], coords[0]], { draggable: true }).addTo(mapaModal);
+    
+        markerModal.on("dragend", () => {
+            const coords = markerModal.getLatLng();
+            document.getElementById("editLatitud").value = coords.lat;
+            document.getElementById("editLongitud").value = coords.lng;
+            mapaModal.setView([coords.lat, coords.lng]);
+        });
+    
+        document.getElementById("editLatitud").addEventListener("input", (e) => {
+            const lat = JSON.parse(e.target.value);
+            const lng = parseFloat(document.getElementById("editLongitud").value);
+            if (!isNaN(lat) && !isNaN(lng) && markerModal) {
+                markerModal.setLatLng([lat, lng]);
+                mapaModal.setView([lat, lng]);
+            }
+        });
+        document.getElementById("editLongitud").addEventListener("input", (e) => {
+            const lat = parseFloat(document.getElementById("editLatitud").value);
+            const lng = JSON.parse(e.target.value);
+            if (!isNaN(lat) && !isNaN(lng) && markerModal) {
+                markerModal.setLatLng([lat, lng]);
+                mapaModal.setView([lat, lng]);
+            }
+        });
+    }
+    
+    document.getElementById("modalEditarValvula").addEventListener("shown.bs.modal", () => {
+        setTimeout(() => {
+        inicializarMapaModal();
+        mapaModal.invalidateSize();
+    
+        // si hay ubicación previa, centrar marker
+        const latitud = document.getElementById("editLatitud").value;
+        const longitud = document.getElementById("editLongitud").value;
+        try {
+            if (latitud && longitud) {
+            markerModal.setLatLng([latitud, longitud]);
+            mapaModal.panTo([latitud, longitud]);
+            }
+        } catch {}
+        }, 200);
+    });
+});
 
 // ==============================================================================================================================
 
@@ -249,7 +348,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
 
             if (!res.ok) throw new Error("Error al crear programación");
-            location.reload();
+            // Limpiar el formulario
+            form.reset();
+            document.getElementById("DiasSeleccionados").innerHTML = "";
+            document.getElementById("DiasHidden").value = "";
         } catch (err) {
             console.error("No se pudo guardar la programación", err);
         }
@@ -272,28 +374,30 @@ document.addEventListener("click", async (e) => {
             });
 
             if (!res.ok) throw new Error("Error al cambiar estado");
-            // Cambiar visualmente el botón y la etiqueta de estado
-            const fila = btn.closest("tr");
-            const celdaEstado = fila.querySelector("td:nth-child(5) span");
-    
-            // Cambiar badge de estado
-            if (nuevoEstado) {
-                celdaEstado.textContent = "Activa";
-                celdaEstado.className = "badge bg-success";
-                btn.textContent = "Desctivar";
-                btn.className = "btn btn-sm btn-danger toggle-estado";
-            } else {
-                celdaEstado.textContent = "Inactiva";
-                celdaEstado.className = "badge bg-secondary";
-                btn.textContent = "Activar";
-                btn.className = "btn btn-sm btn-success toggle-estado";
-            }
-    
-            btn.dataset.estado = nuevoEstado;
+            
         } catch (err) {
             console.error("Error al cambiar estado:", err);
         }
-    } else if (e.target.classList.contains("eliminar-programacion")) {
+    } else if (e.target.classList.contains("toggle-valvula")) {
+        const btn = e.target;
+        const id = btn.dataset.id;
+        const estadoActual = btn.dataset.estado === "true";
+        const nuevoEstado = !estadoActual;
+      
+        try {
+          const res = await fetch(`/api/valvulas/${id}/estado`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            credentials: "include",
+            body: `Estado=${nuevoEstado}`
+          });
+      
+          if (!res.ok) throw new Error("No se pudo cambiar el estado de la válvula");
+        } catch (err) {
+          console.error("Error al cambiar estado de válvula:", err);
+          alert("No se pudo cambiar el estado de la válvula.");
+        }
+      } else if (e.target.classList.contains("eliminar-programacion")) {
         const btn = e.target;
         const id = btn.dataset.id;
 
@@ -356,8 +460,57 @@ document.addEventListener("click", async (e) => {
 
         actualizarDiasEdit();
         modalEditar.show();
+    } else if (e.target.classList.contains("editar-valvula")) {
+        const btn = e.target;
+        const modal = new bootstrap.Modal(document.getElementById("modalEditarValvula"));
+    
+        document.getElementById("editValvulaId").value = btn.dataset.id;
+        document.getElementById("editValvulaDescripcion").value = btn.dataset.descripcion;
+        document.getElementById("editLatitud").value = btn.dataset.ubicacion ? JSON.parse(btn.dataset.ubicacion).coordinates[1] : "";
+        document.getElementById("editLongitud").value = btn.dataset.ubicacion ? JSON.parse(btn.dataset.ubicacion).coordinates[0] : "";
+    
+        modal.show();
     }
 });
+
+document.getElementById("formEditarValvula").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById("editValvulaId").value;
+    const descripcion = document.getElementById("editValvulaDescripcion").value;
+    const latitud = document.getElementById("editLatitud").value;
+    const longitud = document.getElementById("editLongitud").value;
+
+    // crear ubicacion
+    const ubicacion = JSON.stringify({
+        type: "Point",
+        coordinates: [parseFloat(longitud), parseFloat(latitud)]
+    }
+    );
+
+    try {
+        const res = await fetch(`/api/valvulas/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+                Descripcion: descripcion,
+                Ubicacion: JSON.parse(ubicacion)
+            })
+        });
+
+        if (!res.ok) throw new Error("Error al actualizar válvula");
+        const modalElement = document.getElementById("modalEditarValvula");
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    } catch (err) {
+        console.error("Error al actualizar válvula:", err);
+        alert("No se pudo actualizar la válvula. Verifica el formato de la ubicación.");
+    }
+});
+
 
 document.getElementById("formEditarProgramacion").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -387,3 +540,76 @@ document.getElementById("formEditarProgramacion").addEventListener("submit", asy
         alert("No se pudo actualizar la programación.");
     }
 });
+
+
+// ==============================================================================================================================
+
+async function cargarHistoriales(v) {
+    // Historial de válvula
+    const resV = await fetch(`/api/valvulas/${v.ValvulaId}/historial`, { credentials: 'include' });
+    const historialValvula = await resV.json();
+    
+    const containerV = document.getElementById("fichasHistorialValvulas");
+    const cardV = document.createElement("div");
+    cardV.className = "col";
+    cardV.innerHTML = `
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Historial de Válvula #${v.ValvulaId}</h5>
+          <canvas id="grafico-valvula-${v.ValvulaId}" height="200"></canvas>
+        </div>
+      </div>`;
+    containerV.appendChild(cardV);
+  
+    const fechasV = historialValvula.map(h => new Date(h.createdAt).toLocaleString());
+    const estados = historialValvula.map(h => h.Estado ? 1 : 0);
+  
+    new Chart(document.getElementById(`grafico-valvula-${v.ValvulaId}`), {
+      type: 'line',
+      data: {
+        labels: fechasV,
+        datasets: [{
+          label: 'Estado (1=Activa, 0=Inactiva)',
+          data: estados,
+          tension: 0.2,
+          borderWidth: 2
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+  }
+  
+  async function cargarHistorialSensor(s) {
+    const resS = await fetch(`/api/sensores/${s.SensorId}/historial`, { credentials: 'include' });
+    const historialSensor = await resS.json();
+  
+    const containerS = document.getElementById("fichasHistorialSensores");
+    const cardS = document.createElement("div");
+    cardS.className = "col";
+    cardS.innerHTML = `
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Historial de Sensor #${s.SensorId}</h5>
+          <canvas id="grafico-sensor-${s.SensorId}" height="200"></canvas>
+        </div>
+      </div>`;
+    containerS.appendChild(cardS);
+  
+    const fechasS = historialSensor.map(h => new Date(h.createdAt).toLocaleString());
+    const valores = historialSensor.map(h => h.ValorFlujo);
+  
+    new Chart(document.getElementById(`grafico-sensor-${s.SensorId}`), {
+      type: 'line',
+      data: {
+        labels: fechasS,
+        datasets: [{
+          label: 'Flujo',
+          data: valores,
+          tension: 0.3,
+          borderWidth: 2
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+  }
+  

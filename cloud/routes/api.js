@@ -55,11 +55,11 @@ module.exports = (db, io) => {
         permisos
       },
       SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "5h" }
     );
     res.cookie("token", token, {
       httpOnly: true,
-      maxAge: 60 * 60 * 1000
+      maxAge: 60 * 60 * 5 * 1000
     });
     res.json({ status: "ok", message: "Login exitoso" });
   });
@@ -186,14 +186,21 @@ router.post("/programaciones", verificarToken, async (req, res) => {
       raw: true
     });
 
-    res.json({
+    // crear json de respuesta
+    const resp = {
       ProgramacionId: nueva.ProgramacionId,
       HoraInicio: nueva.HoraInicio,
       HoraFinal: nueva.HoraFinal,
       Estado: nueva.Estado,
       Dia: diasTexto.map(d => d.Dia).join(", "),
-      DiaProgramacions: DiasProgramacion,
-    });
+      DiasProgramacion
+    };
+
+    // emitir evento a los clientes conectados
+    io.emit("nueva_programacion", resp);
+
+    // devolver una respuesta ok
+    res.sendStatus(200);
     
   } catch (err) {
     console.error("Error al crear programación:", err);
@@ -292,6 +299,12 @@ router.post("/programaciones/:id/estado", verificarToken, async (req, res) => {
     { Estado },
     { where: { ProgramacionId: req.params.id } }
   );
+  
+  io.emit("estado_programacion_actualizado", {
+    ProgramacionId: req.params.id,
+    NuevoEstado: Estado
+  });
+  
   // devolver un codigo 200
   res.status(200).json({ message: "Estado actualizado" });
 });
@@ -411,7 +424,60 @@ router.get("/placas/:SectorId", verificarToken, async (req, res) => {
 );
 
 
-// -----------------------------CRUD
+// -----------------------------CRUD de valvula
+// actualizar estado de valvula
+router.post("/valvulas/:id/estado", async (req, res) => {
+  try {
+    const valvulaId = req.params.id;
+    const nuevoEstado = req.body.Estado === "true";
+
+    // 1. Actualizar estado de la válvula
+    await db.Valvula.update({ Estado: nuevoEstado }, { where: { ValvulaId: valvulaId } });
+
+    // 2. Buscar el sensor asociado (uno a uno)
+    const sensor = await db.SensorFlujo.findOne({ where: { ValvulaId: valvulaId } });
+    if (sensor) {
+      await db.SensorFlujo.update({ Estado: nuevoEstado }, { where: { SensorId: sensor.SensorId } });
+
+      // Emitir evento de actualización de sensor
+      io.emit("estado_sensor_actualizado", {
+        SensorId: sensor.SensorId,
+        NuevoEstado: nuevoEstado
+      });
+    }
+
+    // Emitir evento de actualización de válvula
+    io.emit("estado_valvula_actualizado", {
+      ValvulaId: valvulaId,
+      NuevoEstado: nuevoEstado
+    });
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("Error al cambiar estado de válvula y sensor:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+// actualizar valvula
+router.put("/valvulas/:id", async (req, res) => {
+  try {
+    const { Descripcion, Ubicacion } = req.body;
+    await db.Valvula.update(
+      { Descripcion, Ubicacion: Ubicacion },
+      { where: { ValvulaId: req.params.id } }
+    );
+    io.emit("valvula_actualizada", {
+      ValvulaId: req.params.id,
+      Descripcion,
+      Ubicacion
+    });
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("Error al actualizar válvula:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
 
 
 // -----------------------------CRUD
@@ -428,7 +494,35 @@ router.get("/placas/:SectorId", verificarToken, async (req, res) => {
 
 // -----------------------------CRUD
 
+// ----------------------------------------------------------------HISTORIALES-----------------------------------------------------------------------------------------
 
+// Obtener historial de una válvula por ID
+router.get("/valvulas/:id/historial", async (req, res) => {
+  try {
+    const historial = await db.HistorialValvula.findAll({
+      where: { ValvulaId: req.params.id },
+      order: [["Fecha", "ASC"]],
+    });
+    res.json(historial);
+  } catch (err) {
+    console.error("Error al obtener historial de válvula:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+// Obtener historial de un sensor de flujo por ID
+router.get("/sensores/:id/historial", async (req, res) => {
+  try {
+    const historial = await db.HistorialFlujo.findAll({
+      where: { SensorId: req.params.id },
+      order: [["Fecha", "ASC"]],
+    });
+    res.json(historial);
+  } catch (err) {
+    console.error("Error al obtener historial de sensor de flujo:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
 
   return router;
 };

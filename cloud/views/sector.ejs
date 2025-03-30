@@ -11,6 +11,8 @@
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
 
   <style>
     #map {
@@ -100,6 +102,7 @@
               <th>Placa</th>
               <th>Estado</th>
               <th>Ubicación</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -121,6 +124,12 @@
           </tbody>
         </table>
         
+        <!-- HISTORIAL DE VÁLVULAS -->
+        <div id="fichasHistorialValvulas" class="row row-cols-1 row-cols-md-2 g-4"></div>
+        <br>
+        <!-- HISTORIAL DE SENSORES DE FLUJO -->
+        <div id="fichasHistorialSensores" class="row row-cols-1 row-cols-md-2 g-4"></div>
+
 
         <div id="map" class="my-4"></div>
 
@@ -166,7 +175,39 @@
         </div>
     </div>
   
-  
+    <div class="modal fade" id="modalEditarValvula" tabindex="-1" aria-labelledby="modalEditarValvulaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <form id="formEditarValvula" class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modalEditarValvulaLabel">Editar Válvula</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="editValvulaId" name="ValvulaId">
+      
+              <div class="mb-3">
+                <label for="editValvulaDescripcion" class="form-label">Descripción</label>
+                <input type="text" class="form-control" id="editValvulaDescripcion" name="Descripcion" required>
+              </div>
+      
+              <div class="mb-3">
+                <label for="editLatitud" class="form-label">Latitud</label>
+                <input type="number" step="any" min="-90" max="90" class="form-control" id="editLatitud" name="Latitud" required>
+              </div>
+              <div class="mb-3">
+                <label for="editLongitud" class="form-label">Longitud</label>
+                <input type="number" step="any" min="-180" max="180" class="form-control" id="editLongitud" name="Longitud" required>
+              </div>              
+
+            <div id="mapaUbicacion" style="height: 250px; width: 100%;" class="mb-3"></div>
+            
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+          </form>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -174,6 +215,7 @@
         const sectorid = "<%= SectorId %>";
       </script>
     <script src="/js/sector.js"></script>
+    <script src="/js/SocketSector.js"></script>
 
 </body>
 </html>

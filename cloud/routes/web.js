@@ -35,6 +35,11 @@ module.exports = (db, io) => {
     // res.json({ status: "ok", message: "Sesión cerrada" });
     res.redirect("/");
   });
+
+  router.get("/monitor", (req, res) => {
+    res.render("monitor"); // Asegúrate de tener la vista "monitor.ejs"
+  });
+  
   
 
   return router;
