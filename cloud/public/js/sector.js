@@ -533,8 +533,13 @@ document.getElementById("formEditarProgramacion").addEventListener("submit", asy
         });
 
         if (!res.ok) throw new Error("Error al actualizar programación");
-        alert("Programación actualizada correctamente");
-        location.reload();
+        // alert("Programación actualizada correctamente");
+        // location.reload();
+        const modalElement = document.getElementById("modalEditarProgramacion");
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
     } catch (err) {
         console.error("Error actualizando programación", err);
         alert("No se pudo actualizar la programación.");
@@ -561,7 +566,7 @@ async function cargarHistoriales(v) {
       </div>`;
     containerV.appendChild(cardV);
   
-    const fechasV = historialValvula.map(h => new Date(h.createdAt).toLocaleString());
+    const fechasV = historialValvula.map(h => new Date(h.Fecha).toLocaleString());
     const estados = historialValvula.map(h => h.Estado ? 1 : 0);
   
     new Chart(document.getElementById(`grafico-valvula-${v.ValvulaId}`), {
@@ -595,7 +600,7 @@ async function cargarHistoriales(v) {
       </div>`;
     containerS.appendChild(cardS);
   
-    const fechasS = historialSensor.map(h => new Date(h.createdAt).toLocaleString());
+    const fechasS = historialSensor.map(h => new Date(h.Fecha).toLocaleString());
     const valores = historialSensor.map(h => h.ValorFlujo);
   
     new Chart(document.getElementById(`grafico-sensor-${s.SensorId}`), {

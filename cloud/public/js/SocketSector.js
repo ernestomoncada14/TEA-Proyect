@@ -132,6 +132,40 @@ socket.on("estado_valvula_actualizado", ({ ValvulaId, NuevoEstado }) => {
       }
     }
   });
+
+  socket.on("programacion_actualizada", ({ ProgramacionId, HoraInicio, HoraFinal, Dias }) => {
+    const filas = document.querySelectorAll("#tablaProgramaciones tr");
+  
+    for (const fila of filas) {
+      const idCelda = fila.children[0]?.textContent?.trim();
+      if (idCelda === String(ProgramacionId)) {
+        // crear un solo texto de todos los dias separados por ,
+        const diasTextoUnido = Dias.map(d => d.Dia).join(", ");
+        // Actualizar días
+        const diasCelda = fila.children[1];
+        diasCelda.textContent = diasTextoUnido;
+  
+        // Actualizar hora de inicio
+        const horaInicioCelda = fila.children[2];
+        horaInicioCelda.textContent = HoraInicio;
+  
+        // Actualizar hora final
+        const horaFinalCelda = fila.children[3];
+        horaFinalCelda.textContent = HoraFinal;
+
+        // Actualizar botón de edición (busca dentro de la fila)
+        const botonEditar = fila.querySelector("button.editar-programacion");
+        if (botonEditar) {
+          botonEditar.dataset.horainicio = HoraInicio;
+          botonEditar.dataset.horafinal = HoraFinal;
+          botonEditar.dataset.dias = JSON.stringify(Dias.map(d => d.DiaId));
+        }
+  
+        break;
+      }
+    }
+  }
+  );
   
   
   

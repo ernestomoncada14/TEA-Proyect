@@ -283,6 +283,18 @@ router.put("/programaciones/:id", async (req, res) => {
       await db.DiaProgramacion.bulkCreate(nuevosDias);
     }
 
+    // obtener los dias en texto
+    const Dias = await db.DiaSemana.findAll({
+      where: { DiaId: dias },
+      raw: true
+    });
+
+    io.emit("programacion_actualizada", {
+      ProgramacionId: req.params.id,
+      HoraInicio: req.body.HoraInicio,
+      HoraFinal: req.body.HoraFinal,
+      Dias: Dias
+    });
     res.sendStatus(200);
   } catch (err) {
     console.error("Error actualizando programación:", err);
