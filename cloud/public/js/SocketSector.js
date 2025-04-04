@@ -167,6 +167,24 @@ socket.on("estado_valvula_actualizado", ({ ValvulaId, NuevoEstado }) => {
   }
   );
   
+  socket.on("nuevo_historial_valvula", (registro) => {
+    const chart = Chart.getChart(`grafico-valvula-${registro.ValvulaId}`);
+    if (chart) {
+      chart.data.labels.push(new Date(registro.Fecha).toLocaleString());
+      chart.data.datasets[0].data.push(registro.Estado ? 1 : 0);
+      chart.update();
+    }
+  });
+  
+  socket.on("nuevo_historial_sensor", (registro) => {
+    const chart = Chart.getChart(`grafico-sensor-${registro.SensorId}`);
+    if (chart) {
+      chart.data.labels.push(new Date(registro.Fecha).toLocaleString());
+      chart.data.datasets[0].data.push(registro.ValorFlujo);
+      chart.update();
+    }
+  });
+  
   
   
   

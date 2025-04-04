@@ -1,46 +1,21 @@
-const view = require("../utils/view");
+
 const express = require("express");
 const { verificarToken, requierePermiso } = require("../middlewares/auth");
 const router = express.Router();
 
 module.exports = (db, io) => {
+  const sectorController = require("../controllers/Sector/sectorController")(db, io);
+  const usuarioController = require("../controllers/Usuario/UsuarioController")(db, io);
 
-  router.get("/", async (req, res) => {
-    res.sendFile(view("index"));
-  });
+  router.get("/", usuarioController.index);
 
-  router.get("/panel", verificarToken, requierePermiso("ver"), async (req, res) => {
-    res.sendFile(view("panel"));
-  });
+  router.get("/panel", verificarToken, requierePermiso("ver"), usuarioController.panel);
 
-  router.get("/Sectores", verificarToken, requierePermiso("ver", "crear", "editar", "eliminar"), async (req, res) => {
-    res.sendFile(view("ver_sectores"));
-  });
+  router.get("/Sectores", verificarToken, requierePermiso("ver", "crear", "editar", "eliminar"), sectorController.listarSectores);
 
-  router.get("/sector/:id", verificarToken, async (req, res) => {
-    try {
-      const SectorId = req.params.id;
+  router.get("/sector/:id", verificarToken, sectorController.verSector);
   
-      res.render("sector", { SectorId });
-    } catch (err) {
-      console.error("Error en ruta /sector/:id", err);
-      res.status(500).send("Error interno del servidor");
-    }
-  });
+  router.get("/logout", usuarioController.logout);
   
-  
-
-  router.get("/logout", (req, res) => {
-    res.clearCookie("token");
-    // res.json({ status: "ok", message: "Sesión cerrada" });
-    res.redirect("/");
-  });
-
-  router.get("/monitor", (req, res) => {
-    res.render("monitor"); // Asegúrate de tener la vista "monitor.ejs"
-  });
-  
-  
-
   return router;
 };

@@ -1,59 +1,85 @@
 import serial
 import time
 import requests
+from datetime import datetime, timezone
+import serial.tools.list_ports
 
-# Configuracion de puerto serial
-SERIAL_PORT = '/dev/ttyACM0'  #  puerto de arduino en Raspberry Pi
-BAUD_RATE = 9600
+# Endpoints de tu aplicación
+URL_VALVULA = "http://localhost:3000/api/valvulas/1/historial"
+URL_SENSOR  = "http://localhost:3000/api/sensores/1/historial"
 
-# Configura tu clave de ThinkSpeak y el canal
-THINGSPEAK_API_KEY = "U6JF7I0Z42L1TDYW"
-THINGSPEAK_URL = "https://api.thingspeak.com/update"
+arduino = None
 
-# Inicializar la conexión serial
-try:
-    arduino = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-    time.sleep(2)  # Espera para estabilizar la conexión
-except Exception as e:
-    print(f"Error al conectar con el puerto serial: {e}")
-    exit()
+def buscar_puerto_arduino():
+    """Busca un puerto válido que parezca ser un Arduino"""
+    puertos = list(serial.tools.list_ports.comports())
+    for p in puertos:
+        if "ttyACM" in p.device:
+            return p.device
+    return None
 
-def enviar_a_thingspeak(valvula, sensor):
-    """
-    Envía datos a ThinkSpeak
-    """
-    try:
-        payload = {
-            "api_key": THINGSPEAK_API_KEY,
-            "field1": valvula,
-            "field2": sensor
-        }
-        response = requests.get(THINGSPEAK_URL, params=payload)
-        if response.status_code == 200:
-            print("Datos enviados correctamente a ThinkSpeak.")
+def conectar_serial():
+    global arduino
+    while True:
+        puerto = buscar_puerto_arduino()
+        if puerto:
+            try:
+                print(f"Conectando al puerto serial ({puerto})...")
+                arduino = serial.Serial(puerto, 9600, timeout=1)
+                time.sleep(2)
+                print("Conexión serial establecida.")
+                return
+            except Exception as e:
+                print(f"Error al abrir el puerto {puerto}: {e}")
         else:
-            print(f"Error al enviar datos: {response.status_code}")
+            print("No se encontró un puerto válido para Arduino.")
+        print("Reintentando en 5 segundos...")
+        time.sleep(5)
+
+def enviar_a_api(valvula, sensor):
+    timestamp = datetime.now(timezone.utc).isoformat()
+    try:
+        r1 = requests.post(URL_VALVULA, json=[{
+            "Estado": int(valvula),
+            "Fecha": timestamp
+        }], timeout=5)
+        r2 = requests.post(URL_SENSOR, json=[{
+            "ValorFlujo": float(sensor),
+            "Fecha": timestamp
+        }], timeout=5)
+
+        if r1.status_code == 201:
+            print("Datos de válvula enviados correctamente.")
+        else:
+            print(f"Error al enviar datos de válvula: {r1.status_code} - {r1.text}")
+
+        if r2.status_code == 201:
+            print("Datos de sensor enviados correctamente.")
+        else:
+            print(f"Error al enviar datos de sensor: {r2.status_code} - {r2.text}")
     except Exception as e:
-        print(f"Error de conexión: {e}")
+        print(f"Error al enviar datos a la API: {e}")
 
 def leer_datos_serial():
-    """
-    Lee datos del puerto serial
-    """
+    global arduino
     try:
         line = arduino.readline().decode('utf-8').strip()
         if line:
             print(f"Datos recibidos: {line}")
-            return line.split(",")  # Divide la línea en los valores separados por comas
+            return line.split(",")
     except Exception as e:
         print(f"Error al leer el puerto serial: {e}")
+        print("Intentando reconectar el puerto serial...")
+        conectar_serial()
     return None
 
 if __name__ == "__main__":
     print("Iniciando lectura y envío de datos...")
+    conectar_serial()
+
     while True:
         data = leer_datos_serial()
-        if data and len(data) == 2:  # Asegura que hay 2 valores
+        if data and len(data) == 2:
             valvula, sensor = data
-            enviar_a_thingspeak(valvula, sensor)
-        time.sleep(15)  # Espera 15 segundos para no exceder el límite de ThinkSpeak
+            enviar_a_api(valvula, sensor)
+        time.sleep(5)
