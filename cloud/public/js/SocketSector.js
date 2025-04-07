@@ -1,4 +1,6 @@
-const socket = io();
+const socket = io({
+  withCredentials: true
+});
 socket.on("connect", () => {
     console.log("🟢 Conectado a WebSocket desde monitor");
     });

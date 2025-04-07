@@ -60,10 +60,12 @@ module.exports = (db, io) => {
           // crear json de respuesta
           const resp = {
             ProgramacionId: nueva.ProgramacionId,
+            SectorId: nueva.SectorId,
             HoraInicio: nueva.HoraInicio,
             HoraFinal: nueva.HoraFinal,
             Estado: nueva.Estado,
             Dia: diasTexto.map(d => d.Dia).join(", "),
+            DiasSeparados: diasTexto,
             DiasProgramacion
           };
       
@@ -194,7 +196,9 @@ module.exports = (db, io) => {
           if (!eliminada) {
             return res.status(404).json({ error: "Programación no encontrada" });
           }
-      
+          io.emit("programacion_eliminada", {
+            ProgramacionId: req.params.id
+          });
           res.json({ message: "Programación eliminada" });
         } catch (err) {
           console.error("Error al eliminar:", err);

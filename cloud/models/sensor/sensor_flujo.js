@@ -20,6 +20,20 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: false
     },
+    Pin: {
+      type: DataTypes.INTEGER,
+      unique: true,
+      validate: {
+        isNumeric: true
+      },
+      validate: {
+        isInt: true
+      },
+      validate: {
+        min: 2
+      },
+      allowNull: false
+    },
     Estado: {
       type: DataTypes.BOOLEAN,
       allowNull: false

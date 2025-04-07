@@ -1,10 +1,6 @@
 const express = require("express");
 
 const { verificarToken, requierePermiso } = require("../middlewares/auth");
-const programacionHorarioController = require("../controllers/Programacion/programacionHorarioController");
-const placaController = require("../controllers/Sector/placaController");
-const valvulaController = require("../controllers/Valvula/valvulaController");
-const historialValvulaController = require("../controllers/Valvula/historialValvulaController");
 // const { DiaProgramacion } = require("../models");
 // const { where } = require("sequelize");
 
@@ -98,10 +94,10 @@ module.exports = (db, io) => {
 
   // -----------------------------CRUD de valvula
   // actualizar estado de valvula
-  router.post("/valvulas/:id/estado", valvulaController.actualizarEstado);
+  router.post("/valvulas/:id/estado", verificarToken, valvulaController.actualizarEstado);
 
   // actualizar valvula
-  router.put("/valvulas/:id", valvulaController.actualizarValvula);
+  router.put("/valvulas/:id", verificarToken, valvulaController.actualizarValvula);
 
 
   // -----------------------------CRUD de 
@@ -121,16 +117,16 @@ module.exports = (db, io) => {
   // ----------------------------------------------------------------HISTORIALES-----------------------------------------------------------------------------------------
 
   // Obtener historial de una válvula por ID
-  router.get("/valvulas/:id/historial", historialValvulaController.obtenerHistorial);
+  router.get("/valvulas/:id/historial", verificarToken, historialValvulaController.obtenerHistorial);
 
   // crear historial de una válvula por ID
-  router.post("/valvulas/:id/historial", historialValvulaController.crearHistorial);
+  router.post("/valvulas/:id/historial", verificarToken, historialValvulaController.crearHistorial);
 
   // Obtener historial de un sensor de flujo por ID
-  router.get("/sensores/:id/historial", historialSensorFlujoController.obtenerHistorial);
+  router.get("/sensores/:id/historial", verificarToken, historialSensorFlujoController.obtenerHistorial);
 
   // crear historial de un sensor de flujo por ID
-  router.post("/sensores/:id/historial", historialSensorFlujoController.crearHistorial);
+  router.post("/sensores/:id/historial", verificarToken, historialSensorFlujoController.crearHistorial);
 
   return router;
 };

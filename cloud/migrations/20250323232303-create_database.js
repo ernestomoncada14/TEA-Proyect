@@ -163,6 +163,11 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false
       },
+      Pin: {
+        type: Sequelize.INTEGER,
+        unique: true,
+        allowNull: false
+      },
       Estado: {
         type: Sequelize.BOOLEAN,
         allowNull: false
@@ -192,6 +197,11 @@ module.exports = {
       },
       Descripcion: {
         type: Sequelize.TEXT,
+        allowNull: false
+      },
+      Pin: {
+        type: Sequelize.INTEGER,
+        unique: true,
         allowNull: false
       },
       Estado: {

@@ -31,12 +31,14 @@
       
           // 2. Buscar el sensor asociado (uno a uno)
           const sensor = await db.SensorFlujo.findOne({ where: { ValvulaId: valvulaId } });
+          const valvula = await db.Valvula.findOne({ where: { ValvulaId: valvulaId } });
           if (sensor) {
             await db.SensorFlujo.update({ Estado: nuevoEstado }, { where: { SensorId: sensor.SensorId } });
       
             // Emitir evento de actualización de sensor
             io.emit("estado_sensor_actualizado", {
               SensorId: sensor.SensorId,
+              Pin: sensor.Pin,
               NuevoEstado: nuevoEstado
             });
           }
@@ -44,6 +46,7 @@
           // Emitir evento de actualización de válvula
           io.emit("estado_valvula_actualizado", {
             ValvulaId: valvulaId,
+            Pin: valvula.Pin,
             NuevoEstado: nuevoEstado
           });
       

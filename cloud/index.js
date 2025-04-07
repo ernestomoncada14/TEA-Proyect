@@ -8,6 +8,7 @@
   const initSocket = require("./WebSockets/Socket");
   const initApiRoutes = require("./routes/api");
   const initWebRoutes = require("./routes/web");
+  const initSyncRoutes = require("./routes/sync");
   const cookieParser = require("cookie-parser");
 
   // Ejemplo de cómo usar la DB
@@ -18,7 +19,12 @@
 
   const app = express();
   const server = http.createServer(app);
-  const io = new Server(server);
+  const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:5173", // o tu frontend
+      credentials: true
+    }
+  });
 
   // Middlewares
   app.use(express.urlencoded({ extended: true }));
@@ -34,6 +40,7 @@
   // Rutas
   app.use("/", initWebRoutes(db, io));
   app.use("/api/", initApiRoutes(db, io));
+  app.use("/api/sync/", initSyncRoutes());
 
   // WebSockets
   initSocket(io, db);

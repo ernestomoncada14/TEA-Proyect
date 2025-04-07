@@ -53,6 +53,7 @@ const { sequelize, Sector, Placa, Valvula, SensorFlujo } = require("../models");
         defaults: {
           PlacaId: placa.PlacaId,
           Descripcion: `Válvula de ${sector.Nombre}`,
+          Pin: placa.PlacaId + 9,
           Estado: false,
           Ubicacion: { type: "Point", coordinates: [-87.11, 13.455] }
         }
@@ -64,6 +65,7 @@ const { sequelize, Sector, Placa, Valvula, SensorFlujo } = require("../models");
         defaults: {
           ValvulaId: valvula.ValvulaId,
           Descripcion: `Sensor de flujo para ${sector.Nombre}`,
+          Pin: valvula.ValvulaId + 1,
           Estado: false,
           Ubicacion: { type: "Point", coordinates: [-87.11, 13.455] }
         }

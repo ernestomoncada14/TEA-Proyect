@@ -39,6 +39,7 @@ module.exports = (db, io) => {
     const userInfo = async (req, res) => {
         res.json({
           id: req.usuario.UsuarioId,
+          rol: req.usuario.rol,
           permisos: req.usuario.permisos
         });
     };
@@ -65,6 +66,7 @@ module.exports = (db, io) => {
         const token = jwt.sign(
           {
             UsuarioId: usuario.UsuarioId,
+            rol: usuario.Rol.NombreRol,
             permisos
           },
           SECRET,
@@ -99,6 +101,7 @@ module.exports = (db, io) => {
         const token = jwt.sign(
           {
             UsuarioId: usuario.UsuarioId,
+            rol: usuario.Rol.NombreRol,
             permisos
           },
           SECRET,
