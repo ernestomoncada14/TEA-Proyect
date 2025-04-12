@@ -16,6 +16,7 @@ class WebSocketClient:
         @self.sio.event
         def connect():
             print("🟢 Conectado al WebSocket")
+            self.arduino.hacer_envio = True
             usuario = obtener_usuario()
             if usuario:
                 print(f"Usuario: ID={usuario['id']}, Rol={usuario['rol']}, Permisos={usuario['permisos']}")
@@ -24,6 +25,7 @@ class WebSocketClient:
         @self.sio.event
         def disconnect():
             print("Desconectado del WebSocket")
+            self.arduino.hacer_envio = False
 
         @self.sio.on("nueva_programacion")
         def recibir_nueva_programacion(data):

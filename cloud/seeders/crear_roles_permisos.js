@@ -6,7 +6,7 @@ const { sequelize, Rol, Permiso, RolPermiso } = require("../models");
     console.log("Conectado a la base de datos");
 
     // Definir roles
-    const roles = ["admin", "fontanero", "habitante"];
+    const roles = ["raspberry", "fontanero", "habitante"];
 
     // Definir permisos
     const permisos = ["ver", "crear", "editar", "eliminar", "api"];
@@ -33,7 +33,7 @@ const { sequelize, Rol, Permiso, RolPermiso } = require("../models");
 
     // Asociaciones de ejemplo entre roles y permisos
     const asociaciones = {
-      admin: ["ver", "crear", "editar", "eliminar", "api"],
+      raspberry: ["ver", "crear", "editar", "eliminar", "api"],
       fontanero: ["ver", "crear", "editar", "eliminar"],
       habitante: ["ver"]
     };

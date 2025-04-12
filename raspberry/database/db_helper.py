@@ -236,12 +236,13 @@ class DBHelper:
 
         conn.commit()
         conn.close()
-        
+      
     @staticmethod
     def obtener_programaciones_completas():
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
+        # Obtener todas las programaciones activas
         cursor.execute("""
         SELECT
         ph.ProgramacionId,
@@ -266,9 +267,26 @@ class DBHelper:
         """)
 
         rows = cursor.fetchall()
-        conn.close()
 
+        # Obtener todas las válvulas activas con sus sensores
+        cursor.execute("""
+        SELECT
+        v.ValvulaId,
+        v.Pin AS PinValvula,
+        v.Estado AS EstadoValvula,
+        s.SensorId,
+        s.Pin AS PinSensor,
+        s.Estado AS EstadoSensor
+        FROM Valvula v
+        LEFT JOIN SensorFlujo s ON s.ValvulaId = v.ValvulaId
+        """)
+        todas_valvulas = cursor.fetchall()
+
+        conn.close()
+        
         programaciones = {}
+        valvulas_ya_incluidas = set()
+
         for row in rows:
             pid = row[0]
             if pid not in programaciones:
@@ -282,7 +300,9 @@ class DBHelper:
                 }
 
             programaciones[pid]["Dias"].add(row[3])  # Día
+
             valvula = {"ValvulaId": row[4], "Pin": row[5], "Estado": row[6], "Manual": row[6]}
+            valvulas_ya_incluidas.add(row[4])
             if valvula not in programaciones[pid]["Valvulas"]:
                 programaciones[pid]["Valvulas"].append(valvula)
 
@@ -291,12 +311,166 @@ class DBHelper:
                 if sensor not in programaciones[pid]["Sensores"]:
                     programaciones[pid]["Sensores"].append(sensor)
 
-        # Convertir sets de días en listas
+        # Agregar válvulas sin programación
+        for row in todas_valvulas:
+            valvula_id = row[0]
+            if valvula_id not in valvulas_ya_incluidas:
+                valvula = {"ValvulaId": row[0], "Pin": row[1], "Estado": row[2], "Manual": row[2]}
+                sensor = None
+                sensor = {"SensorId": row[3], "Pin": row[4], "Estado": row[5], "Manual": row[5]}
+                # Crear programación "virtual" sin horario ni días
+                programaciones[f"virtual_{valvula_id}"] = {
+                    "ProgramacionId": -1,
+                    "HoraInicio": "00:00:00",
+                    "HoraFinal": "00:00:00",
+                    "Dias": ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"],
+                    "Valvulas": [valvula],
+                    "Sensores": [sensor]
+                }
+
+        # Convertir sets en listas y empaquetar resultados
         resultado = []
         for prog in programaciones.values():
-            prog["Dias"] = list(prog["Dias"])
+            if isinstance(prog["Dias"], set):
+                prog["Dias"] = list(prog["Dias"])
             resultado.append(prog)
-
         return resultado
+  
+    # @staticmethod
+    # def obtener_programaciones_completas():
+    #     conn = sqlite3.connect(DB_FILE)
+    #     cursor = conn.cursor()
 
+    #     cursor.execute("""
+    #     SELECT
+    #     ph.ProgramacionId,
+    #     ph.HoraInicio,
+    #     ph.HoraFinal,
+    #     ds.Dia AS DiaSemana,
+    #     v.ValvulaId,
+    #     v.Pin AS PinValvula,
+    #     v.Estado AS EstadoValvula,
+    #     s.SensorId,
+    #     s.Pin AS PinSensor,
+    #     s.Estado AS EstadoSensor
+    #     FROM ProgramacionHorario ph
+    #     JOIN DiaProgramacion dp ON ph.ProgramacionId = dp.ProgramacionId
+    #     JOIN DiaSemana ds ON dp.DiaId = ds.DiaId
+    #     JOIN Sector sec ON ph.SectorId = sec.SectorId
+    #     JOIN Placa p ON p.SectorId = sec.SectorId
+    #     JOIN Valvula v ON v.PlacaId = p.PlacaId
+    #     LEFT JOIN SensorFlujo s ON s.ValvulaId = v.ValvulaId
+    #     WHERE ph.Estado = 1
+    #     ORDER BY ph.ProgramacionId, ds.DiaId
+    #     """)
 
+    #     rows = cursor.fetchall()
+    #     conn.close()
+
+    #     programaciones = {}
+    #     for row in rows:
+    #         pid = row[0]
+    #         if pid not in programaciones:
+    #             programaciones[pid] = {
+    #                 "ProgramacionId": pid,
+    #                 "HoraInicio": row[1],
+    #                 "HoraFinal": row[2],
+    #                 "Dias": set(),
+    #                 "Valvulas": [],
+    #                 "Sensores": []
+    #             }
+
+    #         programaciones[pid]["Dias"].add(row[3])  # Día
+    #         valvula = {"ValvulaId": row[4], "Pin": row[5], "Estado": row[6], "Manual": row[6]}
+    #         if valvula not in programaciones[pid]["Valvulas"]:
+    #             programaciones[pid]["Valvulas"].append(valvula)
+
+    #         if row[7] is not None:
+    #             sensor = {"SensorId": row[7], "Pin": row[8], "Estado": row[9], "Manual": row[9]}
+    #             if sensor not in programaciones[pid]["Sensores"]:
+    #                 programaciones[pid]["Sensores"].append(sensor)
+
+    #     # Convertir sets de días en listas
+    #     resultado = []
+    #     for prog in programaciones.values():
+    #         prog["Dias"] = list(prog["Dias"])
+    #         resultado.append(prog)
+
+    #     return resultado
+    
+#==========================================================================================================================
+    @staticmethod
+    def insertar_historial_valvula(valvula_id: int, estado: int, fecha, enviado: int = 0):
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO HistorialValvula (ValvulaId, Estado, Fecha, Enviado)
+            VALUES (?, ?, ?, 0)
+        """, (valvula_id, estado, fecha, enviado))
+        conn.commit()
+        conn.close()
+    
+    @staticmethod
+    def insertar_historial_flujo(sensor_id: int, valor_flujo: float, fecha, enviado: int = 0):
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO HistorialFlujo (SensorId, ValorFlujo, Fecha, Enviado)
+            VALUES (?, ?, ?, 0)
+        """, (sensor_id, valor_flujo, fecha, enviado))
+        conn.commit()
+        conn.close()
+        
+    @staticmethod
+    def obtener_historial_valvula_NoEnviado():
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT HistorialId, ValvulaId, Estado, Fecha FROM HistorialValvula WHERE Enviado = 0
+        """)
+        resultados = cursor.fetchall()
+        conn.close()
+        return resultados
+    
+    @staticmethod
+    def obtener_historial_flujo_NoEnviado():
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT HistorialId, SensorId, ValorFlujo, Fecha FROM HistorialFlujo WHERE Enviado = 0
+        """)
+        resultados = cursor.fetchall()
+        conn.close()
+        return resultados
+    
+    @staticmethod
+    def actualizar_todos_historial_enviado():
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE HistorialValvula SET Enviado = 1 WHERE Enviado = 0
+        """)
+        cursor.execute("""
+            UPDATE HistorialFlujo SET Enviado = 1 WHERE Enviado = 0
+        """)
+        conn.commit()
+        conn.close()
+    
+    # metodo para devolver la cantidad de valvulas y sensores en numero entero    
+    @staticmethod
+    def obtener_cantidad_valvulas():
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM Valvula")
+        cantidad = cursor.fetchone()[0]
+        conn.close()
+        return cantidad
+    @staticmethod
+    def obtener_cantidad_sensores():
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM SensorFlujo")
+        cantidad = cursor.fetchone()[0]
+        conn.close()
+        return cantidad
+    

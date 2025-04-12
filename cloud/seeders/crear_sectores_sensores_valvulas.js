@@ -43,6 +43,7 @@ const { sequelize, Sector, Placa, Valvula, SensorFlujo } = require("../models");
           SectorId: sector.SectorId,
           Descripcion: `Placa del ${sector.Nombre}`,
           Ubicacion: { type: "Point", coordinates: [-87.11, 13.455] },
+          Estado: false,
           PuertoSerie: `COM-${sector.SectorId}`
         }
       });

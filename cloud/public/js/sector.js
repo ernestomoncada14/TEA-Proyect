@@ -66,7 +66,20 @@ async function cargarDatos() {
             
                 cuerpoValvulas.innerHTML = "";
                 cuerpoSensores.innerHTML = "";
-            
+                
+                const cabecera = document.getElementById("headerSector");
+                cabecera.innerHTML = `
+                    <div class="card-header bg-${placas[0].Estado ? "primary" : "danger"} text-white">
+                        <h4 class="mb-0">${placas[0].Estado ? "Información del Sector" : "Placa no conectada"}</h4>
+                    </div>
+                `;
+                const mensaje = document.getElementById("mensaje_historial");
+                mensaje.innerHTML = `
+                    <div class="card-header bg-${placas[0].Estado ? "success" : "danger"} text-white">
+                        <h4 class="mb-0">${placas[0].Estado ? "Historiales: En linea" : "Historiales: Placa no conectada"}</h4>
+                    </div>
+                `;
+
                 placas.forEach(placa => {
                     placa.Valvulas.forEach(valvula => {
                         // Agregar Historial Valvulas
@@ -94,14 +107,16 @@ async function cargarDatos() {
                             <td>
                                 <button class="btn btn-sm btn-${valvula.Estado ? "danger" : "success"} toggle-valvula"
                                         data-id="${valvula.ValvulaId}"
-                                        data-estado="${valvula.Estado}">
+                                        data-estado="${valvula.Estado}"
+                                        ${placa.Estado ? "" : "disabled"}>
                                 ${valvula.Estado ? "Cerrar" : "Abrir"}
                                 </button>
                                 <button class="btn btn-sm btn-warning editar-valvula"
                                         data-id="${valvula.ValvulaId}"
                                         data-descripcion="${valvula.Descripcion}"
                                         data-ubicacion='${JSON.stringify(valvula.Ubicacion)}'
-                                        data-placa-id="${placa.PlacaId}">
+                                        data-placa-id="${placa.PlacaId}"
+                                        ${placa.Estado ? "" : "disabled"}>
                                     Editar
                                 </button>
                             </td>

@@ -1,10 +1,11 @@
 const jwt = require("jsonwebtoken");
+const view = require("../utils/view");
 const SECRET = "123456";
 
 function verificarToken(req, res, next) {
   const token = req.cookies.token;
 
-  if (!token) return res.status(401).send("No autorizado (token faltante)");
+  if (!token) return res.status(401).sendFile(view("no-autorizado"));
 
   try {
     const decoded = jwt.verify(token, SECRET);

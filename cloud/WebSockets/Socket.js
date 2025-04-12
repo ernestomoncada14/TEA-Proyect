@@ -27,7 +27,12 @@ module.exports = (io, db) => {
 
   io.on("connection", async (socket) => {
     if (socket.usuario) {
-      console.log("🟢 Cliente autenticado:", socket.usuario.NombreCompleto);
+      console.log("🟢 Cliente autenticado:", socket.usuario.rol);
+      if (socket.usuario.rol === "raspberry") {
+        // actualizar el estado de todas las placas a true
+        db.Placa.update({ Estado: true }, { where: {} });
+        socket.broadcast.emit("conexion_cliente", true);
+      }
     } else {
       console.log("🟡 Cliente no autenticado");
     }
@@ -35,7 +40,12 @@ module.exports = (io, db) => {
     socket.emit("init", "Hola desde el servidor");
 
     socket.on("disconnect", () => {
-      console.log("🔴 Cliente desconectado");
+      console.log("🔴 Cliente desconectado: ", socket.usuario.rol);
+      if (socket.usuario.rol === "raspberry") {
+        // actualizar el estado de todas las placas a false
+        db.Placa.update({ Estado: false }, { where: {} });
+        socket.broadcast.emit("conexion_cliente", false);
+      }
     });
   });
 };

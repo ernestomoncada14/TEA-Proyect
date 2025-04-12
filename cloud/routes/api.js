@@ -26,7 +26,7 @@ module.exports = (db, io) => {
   // ----------------------------------------------------------------informacion del user---------------------------------------------------------------------------
 
   // Ruta la informacion del usuario logueado
-  router.get("/userinfo", verificarToken, requierePermiso("api"), usuarioController.userInfo);
+  router.get("/userinfo", verificarToken, requierePermiso("ver", "api"), usuarioController.userInfo);
 
   // ----------------------------------------------------------------LOGIN-----------------------------------------------------------------------------------------
   

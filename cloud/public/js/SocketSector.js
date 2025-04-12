@@ -186,6 +186,43 @@ socket.on("estado_valvula_actualizado", ({ ValvulaId, NuevoEstado }) => {
       chart.update();
     }
   });
+
+  socket.on("conexion_cliente", (estado) => {
+    const cabecera = document.getElementById("headerSector");
+    cabecera.innerHTML = `
+        <div class="card-header bg-${estado ? "primary" : "danger"} text-white">
+            <h4 class="mb-0">${estado ? "Información del Sector" : "Placa no conectada"}</h4>
+        </div>
+    `;
+    const mensaje = document.getElementById("mensaje_historial");
+    mensaje.innerHTML = `
+        <div class="card-header bg-${estado ? "success" : "danger"} text-white">
+            <h4 class="mb-0">${estado ? "Historiales: En linea" : "Historiales: Placa no conectada"}</h4>
+        </div>
+    `;
+    // Actualiza los botones de válvulas
+    document.querySelectorAll(".toggle-valvula").forEach(btn => {
+      if (estado) {
+        btn.removeAttribute("disabled");
+        btn.classList.remove("btn-secondary");
+        btn.classList.add(btn.dataset.estado === "true" ? "btn-danger" : "btn-success");
+      } else {
+        btn.setAttribute("disabled", "true");
+        btn.classList.remove("btn-success", "btn-danger");
+        btn.classList.add("btn-secondary");
+      }
+    });
+
+    // Actualiza los botones de editar válvulas
+    document.querySelectorAll(".editar-valvula").forEach(btn => {
+      if (estado) {
+        btn.removeAttribute("disabled");
+      } else {
+        btn.setAttribute("disabled", "true");
+      }
+    });
+
+  });
   
   
   

@@ -8,20 +8,25 @@
 </head>
 <body class="bg-light">
   <div class="container py-5">
-    <h2 class="mb-4">Listado de Sectores</h2>
+    <div class="card shadow-sm">
+      <h2 class="mb-4">Listado de Sectores</h2>
 
-    <table class="table table-bordered table-striped shadow-sm">
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Descripción</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody id="tablaSectores"></tbody>
-    </table>
-  </div>
+      <table class="table table-bordered table-striped shadow-sm">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tablaSectores"></tbody>
+        </table>
+        <div class="d-flex justify-content-between">
+          <a href="/panel" class="btn btn-secondary">Volver</a>
+        </div>
+      </div>
+    </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {

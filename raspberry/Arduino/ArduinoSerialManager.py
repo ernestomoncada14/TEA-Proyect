@@ -15,6 +15,7 @@ class ArduinoSerialManager:
         self.serial = None
         self.puerto = None
         self.en_uso = False
+        self.hacer_envio = False
         self.primera_vez = True
 
     def buscar_puerto(self):
@@ -43,6 +44,11 @@ class ArduinoSerialManager:
                 print("No se encontró un puerto válido para Arduino.")
             print("Reintentando en 5 segundos...")
             time.sleep(5)
+    
+    def desconectar(self):
+        if self.serial and self.serial.is_open:
+            self.serial.close()
+            print("Desconectado de Arduino.")
 
     def enviar_json(self, datos, intentos = 1):
         
@@ -86,11 +92,6 @@ class ArduinoSerialManager:
             self.conectar()
             # self.enviar_todo_a_arduino()
         return None
-
-    def desconectar(self):
-        if self.serial and self.serial.is_open:
-            self.serial.close()
-            print("Desconectado de Arduino.")
             
     def enviar_todo_a_arduino_sync(self):
         while True:
@@ -102,18 +103,6 @@ class ArduinoSerialManager:
                 break
             else: 
                 time.sleep(3)
-    
-    def leer(self):
-        print("iniciado la lectura")
-        try:
-            while True:
-                if not self.en_uso:
-                    data = self.leer_linea()
-                    if data:
-                        print(data)
-                    time.sleep(0.5)
-        except KeyboardInterrupt:
-            print("Lectura interrumpida por el usuario.")
         
     def enviar_todo_a_arduino(self):
         while True:
@@ -158,3 +147,36 @@ class ArduinoSerialManager:
             print("Error en la respuesta de Arduino:", linea)
             self.enviar_configuracion_reloj(arduino_serial)
 
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------
+    def leer(self):
+        print("iniciado la lectura")
+        try:
+            while True:
+                if not self.en_uso:
+                    data = self.leer_linea()
+                    if data:
+                        try:
+                            json_data = json.loads(data)
+                            valvulas = json_data.get("Valvulas", [])
+                            sensores = json_data.get("Sensores", [])
+                            cantVal = DBHelper.obtener_cantidad_valvulas()
+                            cantSen = DBHelper.obtener_cantidad_sensores()
+                            
+                            if (not valvulas) or (not sensores):
+                                self.enviar_todo_a_arduino()
+                                continue
+                            if (len(valvulas) != cantVal) or (len(sensores) != cantSen):
+                                self.enviar_todo_a_arduino()
+                                continue
+                                
+                            print("Valvulas:", valvulas)
+                            print("Sensores:", sensores)
+                            
+                        except json.JSONDecodeError as e:
+                            print("Error al decodificar JSON:", e)
+                            print("Texto recibido:", data)
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("Lectura interrumpida por el usuario.")
+            
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------

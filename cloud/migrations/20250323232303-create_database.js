@@ -132,6 +132,11 @@ module.exports = {
       Ubicacion: {
         type: Sequelize.GEOMETRY('POINT')
       },
+      Estado: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
       PuertoSerie: {
         type: Sequelize.STRING(15),
         allowNull: false,
