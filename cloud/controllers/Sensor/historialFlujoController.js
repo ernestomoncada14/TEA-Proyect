@@ -18,17 +18,15 @@ module.exports  = (db, io) => {
     const crearHistorial = async (req, res) => {
         try {
           const lista = Array.isArray(req.body) ? req.body : [req.body]; // Acepta uno o varios
-          const registros = lista.map(({ ValorFlujo, Fecha }) => ({
-            SensorId: req.params.id,
+          const registros = lista.map(({ SensorId, ValorFlujo, Estado, Fecha }) => ({
+            SensorId,
             ValorFlujo,
+            Estado,
             Fecha: Fecha || new Date()
           }));
     
           const nuevos = await db.HistorialFlujo.bulkCreate(registros);
-    
-          nuevos.forEach(registro => {
-            io.emit("nuevo_historial_sensor", registro);
-          });
+          io.emit("nuevo_historial_sensor", nuevos);
     
           res.status(201).json({ message: "Historial de sensor guardado" });
         } catch (err) {

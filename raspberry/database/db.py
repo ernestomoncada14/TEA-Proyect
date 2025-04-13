@@ -55,6 +55,7 @@ def init_db():
         HistorialId INTEGER PRIMARY KEY AUTOINCREMENT,
         SensorId INTEGER NOT NULL,
         ValorFlujo REAL NOT NULL,
+        Estado BOOLEAN NOT NULL,
         Fecha TIMESTAMP NOT NULL,
         Enviado INTEGER DEFAULT 0,
         FOREIGN KEY (SensorId) REFERENCES SensorFlujo(SensorId)

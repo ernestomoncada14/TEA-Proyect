@@ -13,7 +13,7 @@ function verificarToken(req, res, next) {
     next();
   } catch (err) {
     console.error("Error en el token:", err.message);
-    return res.status(403).send("Token inválido o expirado");
+    return res.status(403).sendFile(view("no-autorizado"));
   }
 }
 

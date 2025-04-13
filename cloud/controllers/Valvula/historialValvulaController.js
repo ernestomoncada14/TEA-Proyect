@@ -18,17 +18,14 @@ module.exports  = (db, io) => {
     const crearHistorial = async (req, res) => {
         try {
           const lista = Array.isArray(req.body) ? req.body : [req.body]; // Acepta uno o varios
-          const registros = lista.map(({ Estado, Fecha }) => ({
-            ValvulaId: req.params.id,
+          const registros = lista.map(({ ValvulaId, Estado, Fecha }) => ({
+            ValvulaId,
             Estado,
             Fecha: Fecha || new Date()
           }));
     
           const nuevos = await db.HistorialValvula.bulkCreate(registros);
-    
-          nuevos.forEach(registro => {
-            io.emit("nuevo_historial_valvula", registro);
-          });
+          io.emit("nuevo_historial_valvula", nuevos);
     
           res.status(201).json({ message: "Historial de válvula guardado" });
         } catch (err) {

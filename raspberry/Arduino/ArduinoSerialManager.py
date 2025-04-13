@@ -43,6 +43,7 @@ class ArduinoSerialManager:
             else:
                 print("No se encontró un puerto válido para Arduino.")
             print("Reintentando en 5 segundos...")
+            self.primera_vez = True
             time.sleep(5)
     
     def desconectar(self):
@@ -170,7 +171,9 @@ class ArduinoSerialManager:
                                 continue
                                 
                             print("Valvulas:", valvulas)
+                            DBHelper.guardarValvulas(valvulas, self.hacer_envio)
                             print("Sensores:", sensores)
+                            DBHelper.guardarSensores(sensores, self.hacer_envio)
                             
                         except json.JSONDecodeError as e:
                             print("Error al decodificar JSON:", e)

@@ -6,6 +6,7 @@
 const int pinMinValvulas = 10;
 const int pinMaxValvulas = 13;
 const int pinMinSensores = 2;
+const int pinBomba = 7;
 const int numSensores = 4;  // Solo 4 sensores de flujo en este ejemplo
 bool recibir_datos = false;
 const char* dias[] = {"Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"};
@@ -43,7 +44,7 @@ void (*interrupciones[4])() = {sensor0, sensor1, sensor2, sensor3};
 Task tareaLeerSerial(2000, TASK_FOREVER, verificarSerial1);
 Task tareaControlar(1000, TASK_FOREVER, controlarValvulas);
 Task tareaContarFlujo(1000, TASK_FOREVER, tareaFlujo);
-Task tareaEnviarDatos(5000, TASK_FOREVER, enviarDatosSerial);
+Task tareaEnviarDatos(15000, TASK_FOREVER, enviarDatosSerial);
 
 // Setup
 void setup() {
@@ -57,6 +58,8 @@ void setup() {
     pinMode(i, OUTPUT);
     digitalWrite(i, LOW);
   }
+
+  pinMode(pinBomba, OUTPUT);
 
   // Configurar sensores
   for (int i = 0; i < numSensores; i++) {
@@ -133,6 +136,7 @@ void controlarValvulas() {
     int horaActual = now.getHour();
     int minutoActual = now.getMinutes();
     int segundoActual = now.getSeconds();
+    int valvulasAbiertas = 0;
     //DayOfWeek diaActualEnum = now.getDayOfWeek();
 
     // Convertir a string como está en el JSON: "Lunes", "Martes", etc.
@@ -168,7 +172,7 @@ void controlarValvulas() {
       int tiempoFinal = hF * 3600 + mF * 60 + sF;
 
       bool enHorario = diaCoincide && (tiempoActual >= tiempoInicio && tiempoActual <= tiempoFinal);
-
+     
       // -------- VALVULAS --------
       JsonArray valvulas = prog["Valvulas"];
       for (JsonObject valvula : valvulas) {
@@ -178,10 +182,12 @@ void controlarValvulas() {
 
         if (manualV && estadoV) {
           digitalWrite(pin, HIGH);
+          valvulasAbiertas++;
         }
         
         if ((enHorario) && pin >= pinMinValvulas && pin <= pinMaxValvulas) {
           digitalWrite(pin, HIGH);
+          valvulasAbiertas++;
           valvula["Estado"] = true;  // Forzar estado activo en horario
           valvula["Manual"] = false; 
         } else {
@@ -215,6 +221,11 @@ void controlarValvulas() {
           }
         }
       }
+    }
+    if (valvulasAbiertas > 0) {
+      digitalWrite(pinBomba, HIGH);
+    } else {
+      digitalWrite(pinBomba, LOW);
     }
   }
 }
@@ -277,6 +288,7 @@ void enviarDatosSerial() {
             JsonObject s = sensoresArr.add<JsonObject>();
             s["SensorId"] = sensor["SensorId"];
             s["ValorFlujo"] = sensores[idx].totalMililitros;
+            s["Estado"] = sensor["Estado"];
             s["Fecha"] = fechaHora;
           }
         }
@@ -296,6 +308,7 @@ void enviarDatosSerial() {
 
 
 void esperarConfiguracionRTC() {
+  int enviar = 0;
   while (true) {
     if (Serial.available()) {
       String jsonStr = Serial.readStringUntil('\n');
@@ -333,6 +346,10 @@ void esperarConfiguracionRTC() {
       } else {
         Serial.println(error.c_str());
       }
+    }
+    enviar++;
+    if (enviar > 10) {
+      // Serial.println("time");
     }
     delay(200);
   }

@@ -1,8 +1,11 @@
 # db_helper.py
 import sqlite3
 import json
+import requests
 from collections import defaultdict
 from datetime import datetime
+from session.auth import session
+from config.config import BASE_URL
 
 DB_FILE = "sistema_agua_local.db"
 
@@ -335,91 +338,8 @@ class DBHelper:
                 prog["Dias"] = list(prog["Dias"])
             resultado.append(prog)
         return resultado
-  
-    # @staticmethod
-    # def obtener_programaciones_completas():
-    #     conn = sqlite3.connect(DB_FILE)
-    #     cursor = conn.cursor()
-
-    #     cursor.execute("""
-    #     SELECT
-    #     ph.ProgramacionId,
-    #     ph.HoraInicio,
-    #     ph.HoraFinal,
-    #     ds.Dia AS DiaSemana,
-    #     v.ValvulaId,
-    #     v.Pin AS PinValvula,
-    #     v.Estado AS EstadoValvula,
-    #     s.SensorId,
-    #     s.Pin AS PinSensor,
-    #     s.Estado AS EstadoSensor
-    #     FROM ProgramacionHorario ph
-    #     JOIN DiaProgramacion dp ON ph.ProgramacionId = dp.ProgramacionId
-    #     JOIN DiaSemana ds ON dp.DiaId = ds.DiaId
-    #     JOIN Sector sec ON ph.SectorId = sec.SectorId
-    #     JOIN Placa p ON p.SectorId = sec.SectorId
-    #     JOIN Valvula v ON v.PlacaId = p.PlacaId
-    #     LEFT JOIN SensorFlujo s ON s.ValvulaId = v.ValvulaId
-    #     WHERE ph.Estado = 1
-    #     ORDER BY ph.ProgramacionId, ds.DiaId
-    #     """)
-
-    #     rows = cursor.fetchall()
-    #     conn.close()
-
-    #     programaciones = {}
-    #     for row in rows:
-    #         pid = row[0]
-    #         if pid not in programaciones:
-    #             programaciones[pid] = {
-    #                 "ProgramacionId": pid,
-    #                 "HoraInicio": row[1],
-    #                 "HoraFinal": row[2],
-    #                 "Dias": set(),
-    #                 "Valvulas": [],
-    #                 "Sensores": []
-    #             }
-
-    #         programaciones[pid]["Dias"].add(row[3])  # Día
-    #         valvula = {"ValvulaId": row[4], "Pin": row[5], "Estado": row[6], "Manual": row[6]}
-    #         if valvula not in programaciones[pid]["Valvulas"]:
-    #             programaciones[pid]["Valvulas"].append(valvula)
-
-    #         if row[7] is not None:
-    #             sensor = {"SensorId": row[7], "Pin": row[8], "Estado": row[9], "Manual": row[9]}
-    #             if sensor not in programaciones[pid]["Sensores"]:
-    #                 programaciones[pid]["Sensores"].append(sensor)
-
-    #     # Convertir sets de días en listas
-    #     resultado = []
-    #     for prog in programaciones.values():
-    #         prog["Dias"] = list(prog["Dias"])
-    #         resultado.append(prog)
-
-    #     return resultado
     
 #==========================================================================================================================
-    @staticmethod
-    def insertar_historial_valvula(valvula_id: int, estado: int, fecha, enviado: int = 0):
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO HistorialValvula (ValvulaId, Estado, Fecha, Enviado)
-            VALUES (?, ?, ?, 0)
-        """, (valvula_id, estado, fecha, enviado))
-        conn.commit()
-        conn.close()
-    
-    @staticmethod
-    def insertar_historial_flujo(sensor_id: int, valor_flujo: float, fecha, enviado: int = 0):
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO HistorialFlujo (SensorId, ValorFlujo, Fecha, Enviado)
-            VALUES (?, ?, ?, 0)
-        """, (sensor_id, valor_flujo, fecha, enviado))
-        conn.commit()
-        conn.close()
         
     @staticmethod
     def obtener_historial_valvula_NoEnviado():
@@ -437,7 +357,7 @@ class DBHelper:
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT HistorialId, SensorId, ValorFlujo, Fecha FROM HistorialFlujo WHERE Enviado = 0
+            SELECT HistorialId, SensorId, ValorFlujo, Estado, Fecha FROM HistorialFlujo WHERE Enviado = 0
         """)
         resultados = cursor.fetchall()
         conn.close()
@@ -455,6 +375,8 @@ class DBHelper:
         """)
         conn.commit()
         conn.close()
+        
+#==========================================================================================================================
     
     # metodo para devolver la cantidad de valvulas y sensores en numero entero    
     @staticmethod
@@ -474,3 +396,75 @@ class DBHelper:
         conn.close()
         return cantidad
     
+#=====================================================ENVIAR DATA===============================================
+    @staticmethod
+    def guardarValvulas(valvulas, envio):
+        if envio:
+            URL_VALVULA = f'{BASE_URL}/api/valvulas/historial'
+            token = session.cookies.get("token")
+            headers = {}
+            if token:
+                headers["Cookie"] = f"token={token}"
+            r1 = requests.post(URL_VALVULA, headers=headers, json=valvulas, timeout=5)
+            if r1.status_code == 201:
+                print("Datos de válvula enviados correctamente.")
+                print()
+                enviado = True
+            else:
+                print(f"Error al enviar datos de válvula: {r1.status_code} - {r1.text}")
+                print()
+                enviado = False
+        else:
+            enviado = False
+                
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        for valvula in valvulas:
+            cursor.execute("""
+                INSERT OR REPLACE INTO HistorialValvula (ValvulaId, Estado, Fecha, Enviado)
+                VALUES (?, ?, ?, ?)
+                """, (
+                    valvula['ValvulaId'],
+                    valvula['Estado'],
+                    valvula['Fecha'],
+                    enviado
+                ))
+        conn.commit()
+        conn.close()
+    
+    @staticmethod
+    def guardarSensores(sensores, envio):
+        if envio:
+            URL_VALVULA = F'{BASE_URL}/api/sensores/historial'
+            token = session.cookies.get("token")
+            headers = {}
+            if token:
+                headers["Cookie"] = f"token={token}"
+            r1 = requests.post(URL_VALVULA, headers=headers, json=sensores, timeout=5)
+            if r1.status_code == 201:
+                print("Datos del sensor enviados correctamente.")
+                print()
+                enviado = True
+            else:
+                print(f"Error al enviar datos del sensor: {r1.status_code} - {r1.text}")
+                print()
+                enviado = False
+        else:
+            print("No hay conexion con el servidor, Seguardaran los datos en Local")
+            enviado = False
+                
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        for sensor in sensores:
+            cursor.execute("""
+                INSERT OR REPLACE INTO HistorialFlujo (SensorId, ValorFlujo, Estado, Fecha, Enviado)
+                VALUES (?, ?, ?, ?, ?)
+                """, (
+                    sensor['SensorId'],
+                    sensor['ValorFlujo'],
+                    sensor['Estado'],
+                    sensor['Fecha'],
+                    enviado
+                ))
+        conn.commit()
+        conn.close()

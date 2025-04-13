@@ -365,6 +365,10 @@ module.exports = {
         type: Sequelize.FLOAT,
         allowNull: false
       },
+      Estado: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false
+      },
       Fecha: {
         type: Sequelize.DATE,
         allowNull: false

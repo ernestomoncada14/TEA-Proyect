@@ -119,14 +119,14 @@ module.exports = (db, io) => {
   // Obtener historial de una válvula por ID
   router.get("/valvulas/:id/historial", verificarToken, historialValvulaController.obtenerHistorial);
 
-  // crear historial de una válvula por ID
-  router.post("/valvulas/:id/historial", verificarToken, historialValvulaController.crearHistorial);
+  // crear historial de las válvulas por ID
+  router.post("/valvulas/historial", verificarToken, historialValvulaController.crearHistorial);
 
   // Obtener historial de un sensor de flujo por ID
   router.get("/sensores/:id/historial", verificarToken, historialSensorFlujoController.obtenerHistorial);
 
   // crear historial de un sensor de flujo por ID
-  router.post("/sensores/:id/historial", verificarToken, historialSensorFlujoController.crearHistorial);
+  router.post("/sensores/historial", verificarToken, historialSensorFlujoController.crearHistorial);
 
   return router;
 };

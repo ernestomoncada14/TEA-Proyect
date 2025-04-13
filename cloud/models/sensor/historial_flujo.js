@@ -15,6 +15,10 @@ module.exports = (sequelize) => {
       type: DataTypes.FLOAT,
       allowNull: false
     },
+    Estado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false
+    },
     Fecha: {
       type: DataTypes.DATE,
       allowNull: false
