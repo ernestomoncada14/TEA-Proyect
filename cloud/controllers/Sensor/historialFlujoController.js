@@ -27,6 +27,10 @@ module.exports  = (db, io) => {
     
           const nuevos = await db.HistorialFlujo.bulkCreate(registros);
           io.emit("nuevo_historial_sensor", nuevos);
+
+          nuevos.forEach(element => {
+            io.emit("estado_sensor_actualizado", ({SensorId: element.SensorId, NuevoEstado: element.Estado}));
+          });
     
           res.status(201).json({ message: "Historial de sensor guardado" });
         } catch (err) {

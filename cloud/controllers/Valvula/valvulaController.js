@@ -36,6 +36,11 @@
             await db.SensorFlujo.update({ Estado: nuevoEstado }, { where: { SensorId: sensor.SensorId } });
       
             // Emitir evento de actualización de sensor
+            io.emit("estado_sensor_actualizado_M", {
+              SensorId: sensor.SensorId,
+              Pin: sensor.Pin,
+              NuevoEstado: nuevoEstado
+            });
             io.emit("estado_sensor_actualizado", {
               SensorId: sensor.SensorId,
               Pin: sensor.Pin,
@@ -44,6 +49,11 @@
           }
       
           // Emitir evento de actualización de válvula
+          io.emit("estado_valvula_actualizado_M", {
+            ValvulaId: valvulaId,
+            Pin: valvula.Pin,
+            NuevoEstado: nuevoEstado
+          });
           io.emit("estado_valvula_actualizado", {
             ValvulaId: valvulaId,
             Pin: valvula.Pin,

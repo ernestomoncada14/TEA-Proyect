@@ -166,7 +166,7 @@ class ArduinoSerialManager:
                             if (not valvulas) or (not sensores):
                                 self.enviar_todo_a_arduino()
                                 continue
-                            if (len(valvulas) != cantVal) or (len(sensores) != cantSen):
+                            if (len(valvulas) < cantVal) or (len(sensores) < cantSen):
                                 self.enviar_todo_a_arduino()
                                 continue
                                 

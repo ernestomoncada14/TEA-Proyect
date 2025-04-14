@@ -26,6 +26,10 @@ module.exports  = (db, io) => {
     
           const nuevos = await db.HistorialValvula.bulkCreate(registros);
           io.emit("nuevo_historial_valvula", nuevos);
+
+          nuevos.forEach(element => {
+            io.emit("estado_valvula_actualizado", ({ValvulaId: element.ValvulaId, NuevoEstado: element.Estado}));
+          });
     
           res.status(201).json({ message: "Historial de válvula guardado" });
         } catch (err) {

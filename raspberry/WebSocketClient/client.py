@@ -117,7 +117,7 @@ class WebSocketClient:
         def eliminar_programacion(_):
             self.sincronizar_programacion()
 
-        @self.sio.on("estado_valvula_actualizado")
+        @self.sio.on("estado_valvula_actualizado_M")
         def actualizar_valvula(data):
             try:
                 DBHelper.actualizar_estado_valvula(

@@ -147,6 +147,9 @@ void controlarValvulas() {
       digitalWrite(i, LOW);
     }
 
+    int count = 0;
+    int pinesValvulasActivas[4];
+    
     for (JsonObject prog : doc.as<JsonArray>()) {
       const char* horaInicioStr = prog["HoraInicio"];
       const char* horaFinalStr = prog["HoraFinal"];
@@ -187,9 +190,13 @@ void controlarValvulas() {
         
         if ((enHorario) && pin >= pinMinValvulas && pin <= pinMaxValvulas) {
           digitalWrite(pin, HIGH);
-          valvulasAbiertas++;
+          pinesValvulasActivas[count] = pin;
+          count++;
+          valvulasAbiertas++; 
           valvula["Estado"] = true;  // Forzar estado activo en horario
           valvula["Manual"] = false; 
+        } else if (estaEnArray(pin, pinesValvulasActivas, 4)) {
+          continue;
         } else {
           if (!manualV) {
             valvula["Estado"] = false; 
@@ -197,7 +204,6 @@ void controlarValvulas() {
           }
         }
       }
-
       // -------- SENSORES --------
       JsonArray sensoresArr = prog["Sensores"];
       for (JsonObject sensor : sensoresArr) {
@@ -230,6 +236,12 @@ void controlarValvulas() {
   }
 }
 
+bool estaEnArray(int valor, int arr[], int tam) {
+  for (int i = 0; i < tam; i++) {
+    if (arr[i] == valor) return true;
+  }
+  return false;
+}
 
 // contar flujo de cada sensor
 void tareaFlujo() {
