@@ -206,6 +206,70 @@ module.exports = (db, io) => {
         }
     };
 
+    const obtenerProximasProgramaciones = async (req, res) => {
+      try {
+        const hoy = new Date();
+        const proximos7dias = [];
+    
+        for (let i = 0; i < 7; i++) {
+          const fecha = new Date(hoy);
+          fecha.setDate(hoy.getDate() + i);
+          const diaSemana = fecha.getDay(); // 0 (domingo) a 6 (sábado)
+          proximos7dias.push({
+            fecha,
+            diaId: diaSemana + 1,
+          });
+        }
+    
+        // Obtener todas las programaciones activas con sus días asociados y el sector
+        const programaciones = await db.ProgramacionHorario.findAll({
+          where: { Estado: true },
+          include: [
+            {
+              model: db.DiaProgramacion,
+              include: [{ model: db.DiaSemana }],
+            },
+            {
+              model: db.Sector,
+              attributes: ['Nombre']
+            }
+          ]
+        });
+        const resultado = [];
+        // Por cada día a evaluar
+        for (const dia of proximos7dias) {
+
+          const diaId = dia.diaId;
+          const fechaStr = dia.fecha.toISOString().split('T')[0]; // yyyy-mm-dd
+
+          for (const prog of programaciones) {
+
+            for (const DiaProgramacion of prog.DiaProgramacions) {
+              
+              if (DiaProgramacion.DiaId === diaId) {
+                resultado.push({
+                  Fecha: fechaStr,
+                  Dia: DiaProgramacion.DiaSemana.Dia,
+                  HoraInicio: prog.HoraInicio,
+                  HoraFinal: prog.HoraFinal,
+                  Sector: prog.Sector.Nombre
+                });
+              }
+
+            }
+
+          }
+          
+        }
+    
+        res.json(resultado);
+      } catch (error) {
+        console.error("Error al calcular próximas programaciones:", error);
+        res.status(500).json({ error: "Error al obtener los próximos horarios" });
+      }
+    };
+    
+
     return {
         programaciones,
         crearProgramacion,
@@ -214,5 +278,6 @@ module.exports = (db, io) => {
         actualizarProgramacion,
         cambiarEstado,
         eliminarProgramacion,
+        obtenerProximasProgramaciones
     };
 }

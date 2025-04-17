@@ -86,6 +86,65 @@ module.exports = (db, io) => {
       }
     };
 
+    const obtenerHorariosPorSector = async (req, res) => {
+      try {
+        const sectorId = req.params.id;
+        if (!sectorId) {
+          return res.status(400).json({ error: "ID del sector requerido" });
+        }
+    
+        const sector = await db.Sector.findByPk(sectorId);
+        if (!sector) {
+          return res.status(404).json({ error: "Sector no encontrado" });
+        }
+    
+        const programaciones = await db.ProgramacionHorario.findAll({
+          where: {
+            SectorId: sector.SectorId,
+            Estado: true
+          },
+          include: [{
+            model: db.DiaProgramacion,
+            include: db.DiaSemana
+          }]
+        });
+    
+        const hoy = new Date();
+        const proximos7Dias = Array.from({ length: 7 }, (_, i) => {
+          const fecha = new Date(hoy);
+          fecha.setDate(hoy.getDate() + i);
+          return fecha;
+        });
+    
+        const resultado = [];
+    
+        for (const prog of programaciones) {
+          for (const diaProg of prog.DiaProgramacions) {
+            const diaNombre = diaProg.DiaSemana.Dia.toLowerCase();
+    
+            proximos7Dias.forEach(fecha => {
+              const diaFecha = fecha.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
+              if (diaNombre === diaFecha) {
+                resultado.push({
+                  dia: diaNombre,
+                  fecha: fecha.toISOString().split('T')[0],
+                  HoraInicio: prog.HoraInicio,
+                  HoraFinal: prog.HoraFinal
+                });
+              }
+            });
+          }
+        }
+    
+        resultado.sort((a, b) => new Date(a.fecha + 'T' + a.HoraInicio) - new Date(b.fecha + 'T' + b.HoraInicio));
+    
+        res.json(resultado);
+      } catch (err) {
+        console.error("Error al obtener horarios por sector:", err);
+        res.status(500).json({ error: "Error interno del servidor" });
+      }
+    };
+
     return {
         verSector,
         listarSectores,
@@ -94,5 +153,6 @@ module.exports = (db, io) => {
         leerUno,
         actualizarSector,
         eliminarSector,
+        obtenerHorariosPorSector
     };
 }

@@ -67,8 +67,30 @@
         }
     };
 
+    const obtenerResumen = async (req, res) => {
+      try {
+        const valvulas = await db.Valvula.findAll({
+          include: [{ model: db.SensorFlujo }]
+        });
+    
+        const resumen = valvulas.map(v => ({
+          ValvulaId: v.ValvulaId,
+          Descripcion: v.Descripcion,
+          SensorId: v.SensorFlujos.length > 0 ? v.SensorFlujos[0].SensorId : null
+        }));        
+        
+        console.log(JSON.stringify(valvulas, null, 2));
+
+        res.json(resumen);
+      } catch (err) {
+        console.error("Error al obtener resumen de válvulas:", err);
+        res.status(500).json({ error: "Error interno del servidor" });
+      }
+    };
+
     return {
         actualizarValvula,
         actualizarEstado,
+        obtenerResumen
     };
  }

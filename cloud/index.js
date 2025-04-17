@@ -10,7 +10,9 @@
   const initWebRoutes = require("./routes/web");
   const initSyncRoutes = require("./routes/sync");
   const cookieParser = require("cookie-parser");
-
+  const session = require('express-session');
+  const flash = require('connect-flash');
+  
   // Ejemplo de cómo usar la DB
   const db = require("./models");
 
@@ -30,6 +32,18 @@
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(cookieParser());
+  app.use(session({
+    secret: '123456789',
+    resave: false,
+    saveUninitialized: false
+  }));
+  app.use(flash());
+
+  app.use((req, res, next) => {
+    res.locals.mensajeError = req.flash('error');
+    res.locals.mensajeExito = req.flash('exito');
+    next();
+  });
 
   app.set("view engine", "ejs");
   app.set("views", path.join(__dirname, "views")); // carpeta donde pondrás los .ejs

@@ -18,7 +18,40 @@
           <p><strong>Rol:</strong> <span id="rol" class="badge bg-primary text-light">Cargando...</span></p>
           <p><strong>Permisos:</strong> <span id="permisos" class="badge bg-secondary text-light">Cargando...</span></p>
         </div>
+        <br>
+        <h3 class="mt-5">Próximos Horarios</h3>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Día</th>
+              <th>Hora Inicio</th>
+              <th>Hora Final</th>
+              <th>Sector</th>
+            </tr>
+          </thead>
+          <tbody id="tablaHorarios"></tbody>
+        </table>
 
+        <br>
+        <div class="mb-3">
+          <label class="form-label">Filtrar Historial de Válvula</label>
+          <div class="row g-2">
+            <div class="col">
+              <input type="datetime-local" id="filtroFechaInicio" class="form-control" placeholder="Desde">
+            </div>
+            <div class="col">
+              <input type="datetime-local" id="filtroFechaFin" class="form-control" placeholder="Hasta">
+            </div>
+            <div class="col-auto">
+              <button onclick="filtrarValvulas()" class="btn btn-primary">Aplicar Filtro</button>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="mt-5">Resumen de Válvulas y Sensores</h3>
+        <div id="contenedorResumen" class="row row-cols-1 row-cols-md-2 g-4 mt-2"></div>
+        <br>
         <div class="d-flex justify-content-between">
           <a href="/sectores" class="btn btn-outline-success">Ver los sectores</a>
           <button id="logoutBtn" class="btn btn-outline-danger">Cerrar sesión</button>
@@ -26,6 +59,8 @@
       </div>
     </div>
   </div>
+
+  <script src="/js/panel.js"></script>
 
   <script>
     // Obtener la info del usuario autenticado desde el backend

@@ -5,17 +5,21 @@ const router = express.Router();
 
 module.exports = (db, io) => {
   const sectorController = require("../controllers/Sector/sectorController")(db, io);
-  const usuarioController = require("../controllers/Usuario/UsuarioController")(db, io);
+  const usuarioController = require("../controllers/Usuario/UsuarioController")(db);
 
   router.get("/", usuarioController.index);
 
-  router.get("/panel", verificarToken, requierePermiso("ver"), usuarioController.panel);
+  router.get("/crear_usuario", usuarioController.vistaCrearUsuario);
 
-  router.get("/Sectores", verificarToken, requierePermiso("ver", "crear", "editar", "eliminar"), sectorController.listarSectores);
+  router.get("/panel", verificarToken, requierePermiso("crear", "editar", "eliminar"), usuarioController.panel);
 
-  router.get("/sector/:id", verificarToken, sectorController.verSector);
+  router.get("/Sectores", verificarToken, requierePermiso("crear", "editar", "eliminar"), sectorController.listarSectores);
+
+  router.get("/sector/:id", verificarToken, requierePermiso("crear", "editar", "eliminar"), sectorController.verSector);
   
   router.get("/logout", usuarioController.logout);
+
+  router.get("/habitante/:id", verificarToken, requierePermiso("ver"), usuarioController.verHabitante);
   
   return router;
 };

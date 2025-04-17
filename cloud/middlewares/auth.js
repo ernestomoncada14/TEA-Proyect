@@ -25,7 +25,10 @@ function requierePermiso(permiso) {
       !Array.isArray(req.usuario.permisos) ||
       !req.usuario.permisos.includes(permiso)
     ) {
-      return res.status(403).json({ status: "error", message: "Permiso denegado" });
+      // return res.status(403).json({ status: "error", message: "Permiso denegado" });
+      req.flash("error", "No tiene permiso para acceder a esta sección");
+      return res.redirect("back");
+
     }
 
     next();

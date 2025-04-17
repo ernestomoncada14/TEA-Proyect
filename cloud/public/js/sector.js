@@ -5,6 +5,8 @@
 
 // ==============================================================================================================================
 const valvulaMarkers = {}; // clave: ValvulaId, valor: marker
+let VALVULAS = [];
+let SENSORES = [];
 
 async function obtenerSector() {
     try {
@@ -81,6 +83,7 @@ async function cargarDatos() {
                 `;
 
                 placas.forEach(placa => {
+                    VALVULAS = placa.Valvulas;
                     placa.Valvulas.forEach(valvula => {
                         // Agregar Historial Valvulas
                         cargarHistoriales(valvula);
@@ -125,6 +128,7 @@ async function cargarDatos() {
             
                         // Agregar sensores asociados
                         if (valvula.SensorFlujos && Array.isArray(valvula.SensorFlujos)) {
+                            SENSORES = valvula.SensorFlujos;
                             valvula.SensorFlujos.forEach(sensor => {
                                 // Agregar Historial Sensores
                                 cargarHistorialSensor(sensor);
@@ -564,12 +568,19 @@ document.getElementById("formEditarProgramacion").addEventListener("submit", asy
 
 // ==============================================================================================================================
 
-async function cargarHistoriales(v) {
-    // Historial de válvula
-    const resV = await fetch(`/api/valvulas/${v.ValvulaId}/historial`, { credentials: 'include' });
+async function cargarHistoriales(v, desde = null, hasta = null) {
+    const params = new URLSearchParams();
+    if (desde) params.append('desde', desde);
+    if (hasta) params.append('hasta', hasta);
+  
+    const resV = await fetch(`/api/valvulas/${v.ValvulaId}/historial?${params}`, {
+      credentials: 'include'
+    });
     const historialValvula = await resV.json();
-    
+  
     const containerV = document.getElementById("fichasHistorialValvulas");
+    containerV.innerHTML = ''; // Limpiar anterior
+  
     const cardV = document.createElement("div");
     cardV.className = "col";
     cardV.innerHTML = `
@@ -599,11 +610,19 @@ async function cargarHistoriales(v) {
     });
   }
   
-  async function cargarHistorialSensor(s) {
-    const resS = await fetch(`/api/sensores/${s.SensorId}/historial`, { credentials: 'include' });
+  
+  async function cargarHistorialSensor(s, desde = null, hasta = null) {
+    const params = new URLSearchParams();
+    if (desde) params.append('desde', desde);
+    if (hasta) params.append('hasta', hasta);
+  
+    const resS = await fetch(`/api/sensores/${s.SensorId}/historial?${params}`, {
+      credentials: 'include'
+    });
     const historialSensor = await resS.json();
   
     const containerS = document.getElementById("fichasHistorialSensores");
+  
     const cardS = document.createElement("div");
     cardS.className = "col";
     cardS.innerHTML = `
@@ -632,4 +651,32 @@ async function cargarHistoriales(v) {
       options: { responsive: true, plugins: { legend: { display: false } } }
     });
   }
+  
+
+  function filtrarHistorialValvulas() {
+    const desde = document.getElementById('filtroFechaInicio').value;
+    const hasta = document.getElementById('filtroFechaFin').value;
+  
+    const containerV = document.getElementById("fichasHistorialValvulas");
+    const containerS = document.getElementById("fichasHistorialSensores");
+    containerV.innerHTML = '';
+    containerS.innerHTML = '';
+  
+    if (hasta) {
+        console.log("No estamos al dia");
+        alDia = false;
+    } else {
+        console.log("Estamos al dia");
+        alDia = true;
+    }
+
+    if (VALVULAS.length > 0) {
+      VALVULAS.forEach(v => cargarHistoriales(v, desde || null, hasta || null));
+    }
+
+    if (SENSORES.length > 0) {
+        SENSORES.forEach(s => cargarHistorialSensor(s, desde || null, hasta || null));
+    }
+  }
+  
   

@@ -26,6 +26,7 @@
 
       <p id="mensaje" class="text-danger mt-3 text-center"></p>
     </form>
+    <a href="/crear_usuario">Crear Usuario</a>
   </div>
 
   <script>
@@ -48,7 +49,13 @@
         const data = await response.json();
 
         if (response.ok && data.status === "ok") {
-          window.location.href = "/panel";
+          if (data.rol === "fontanero") {
+            window.location.href = "/panel";
+          } else if (data.rol === "habitante") {
+            window.location.href = `/habitante/${data.id}`;
+          } else {
+            mensaje.textContent = "Rol no reconocido.";
+          }
         } else {
           mensaje.textContent = data.message || "Correo o contraseña incorrectos.";
         }
