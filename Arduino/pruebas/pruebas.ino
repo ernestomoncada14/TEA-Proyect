@@ -212,18 +212,19 @@ void controlarValvulas() {
         bool manualS = sensor["Manual"];
         bool estadoS = sensor["Estado"];
 
-        if (pin >= pinMinSensores && idx >= 0 && idx < numSensores) {
-          if (estadoS && manualS) {
+        if (estadoS && manualS) {
             sensor["Estado"] = true;
-          }
+        }
+
+        if (pin >= pinMinSensores && idx >= 0 && idx < numSensores) {
           if (enHorario) {
             sensor["Estado"] = true;  // activo
             sensor["Manual"] = false; 
           } else {
             if (!manualS) {
-              sensor["Estado"] = false; 
+              sensor["Estado"] = false;
+              sensores[idx].totalMililitros = 0;  // Reset fuera de horario o si está apagado 
             }
-            sensores[idx].totalMililitros = 0;  // Reset fuera de horario o si está apagado
           }
         }
       }

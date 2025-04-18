@@ -51,6 +51,8 @@ module.exports  = (db, io) => {
           io.emit("nuevo_historial_sensor", nuevos);
 
           nuevos.forEach(element => {
+            // actualizar el estado del sensor
+            db.SensorFlujo.update({ Estado: element.Estado }, { where: { SensorId: element.SensorId } });
             io.emit("estado_sensor_actualizado", ({SensorId: element.SensorId, NuevoEstado: element.Estado}));
           });
     

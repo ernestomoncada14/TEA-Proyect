@@ -51,6 +51,8 @@ module.exports  = (db, io) => {
           io.emit("nuevo_historial_valvula", nuevos);
 
           nuevos.forEach(element => {
+            // actualizar el estado de la válvula
+            db.Valvula.update({ Estado: element.Estado }, { where: { ValvulaId: element.ValvulaId } });
             io.emit("estado_valvula_actualizado", ({ValvulaId: element.ValvulaId, NuevoEstado: element.Estado}));
           });
     

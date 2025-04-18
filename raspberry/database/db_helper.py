@@ -219,6 +219,9 @@ class DBHelper:
             cursor.execute("""
                 UPDATE Valvula SET Estado = ? WHERE ValvulaId = ?
             """, (estado, valvula_id))
+            cursor.execute("""
+                UPDATE SensorFlujo SET Estado = ? WHERE ValvulaId = ?
+            """, (estado, valvula_id))
 
         conn.commit()
         conn.close()

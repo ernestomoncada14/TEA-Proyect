@@ -126,7 +126,7 @@ class ArduinoSerialManager:
         config = {
             "anio": ahora.year,
             "mes": ahora.month,
-            "dia": ahora.day,
+            "fecha": ahora.day,
             "hora": ahora.hour,
             "minuto": ahora.minute,
             "segundo": ahora.second,
