@@ -86,6 +86,7 @@ module.exports = (db, io) => {
   // Leer uno
   router.get("/sectores/:id", verificarToken, requierePermiso("crear", "editar", "eliminar"), sectorController.leerUno);
   router.get("/sectores/horarios/:id", verificarToken, requierePermiso("crear", "editar", "eliminar"), sectorController.obtenerHorariosPorSector);
+  router.get("/sectores/horarioss/:id", verificarToken, requierePermiso("ver"), sectorController.obtenerHorariosPorSector);
 
   // Actualizar
   router.put("/sectores/:id", verificarToken, requierePermiso("crear", "editar", "eliminar"), sectorController.actualizarSector);

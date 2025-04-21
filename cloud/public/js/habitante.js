@@ -22,11 +22,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   
     if (sectorId) {
         try {
-        const res = await fetch(`/api/sectores/horarios/${sectorId}`, {
+        const res = await fetch(`/api/sectores/horarioss/${sectorId}`, {
             credentials: 'include'
             });
         const horarios = await res.json();
-
         if (horarios.length === 0) {
             tablaHorarios.innerHTML = "<tr><td colspan='3' class='text-muted'>No hay horarios programados para este sector.</td></tr>";
           } else {
