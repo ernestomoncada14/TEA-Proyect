@@ -1,6 +1,7 @@
 const { sequelize, Usuario } = require("../models");
 
 (async () => {
+  const bcrypt = require("bcrypt");
   try {
     await sequelize.authenticate();
     console.log("Conectado a la base de datos");
@@ -16,19 +17,19 @@ const { sequelize, Usuario } = require("../models");
         RolId: 2,
         NombreCompleto: "Ernesto(neto) Moncada",
         Correo: "neto@example.com",
-        Contrasenia: "123"
+        Contrasenia: await bcrypt.hash("123", 10)
       },
       {
         RolId: 3,
         NombreCompleto: "Daniel Henrriquez",
         Correo: "daniel@example.com",
-        Contrasenia: "123"
+        Contrasenia: await bcrypt.hash("123", 10)
       },
       {
         RolId: 3,
         NombreCompleto: "Ingrid Bauedano",
         Correo: "ingrid@example.com",
-        Contrasenia: "123"
+        Contrasenia: await bcrypt.hash("123", 10)
       }
     ];
 
