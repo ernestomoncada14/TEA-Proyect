@@ -16,19 +16,19 @@ const { sequelize, Usuario } = require("../models");
       {
         RolId: 2,
         NombreCompleto: "Ernesto(neto) Moncada",
-        Correo: "neto@example.com",
+        Correo: "neto@agua.com",
         Contrasenia: await bcrypt.hash("123", 10)
       },
       {
         RolId: 3,
         NombreCompleto: "Daniel Henrriquez",
-        Correo: "daniel@example.com",
+        Correo: "daniel@agua.com",
         Contrasenia: await bcrypt.hash("123", 10)
       },
       {
         RolId: 3,
         NombreCompleto: "Ingrid Bauedano",
-        Correo: "ingrid@example.com",
+        Correo: "ingrid@agua.com",
         Contrasenia: await bcrypt.hash("123", 10)
       }
     ];
