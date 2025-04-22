@@ -5,6 +5,8 @@ const { sequelize, Sector, Placa, Valvula, SensorFlujo } = require("../models");
     await sequelize.authenticate();
     console.log("Conectado a la base de datos");
 
+    const pinesSensores = [2, 3, 18];
+
     const sectores = [
       {
         nombre: "Sector A",
@@ -66,7 +68,7 @@ const { sequelize, Sector, Placa, Valvula, SensorFlujo } = require("../models");
         defaults: {
           ValvulaId: valvula.ValvulaId,
           Descripcion: `Sensor de flujo para ${sector.Nombre}`,
-          Pin: valvula.ValvulaId + 1,
+          Pin: pinesSensores[valvula.ValvulaId - 1],
           Estado: false,
           Ubicacion: { type: "Point", coordinates: [-87.11, 13.455] }
         }
